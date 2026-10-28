@@ -19,6 +19,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-es.png" width="860" alt="Resumen de CHC con datos de ejemplo">
+</p>
+
 ## Características
 
 - **Puntuación de salud (0–100)** para todo el equipo y para cada componente, con estados claros: *Correcto / Consejo / Advertencia / Crítico*.

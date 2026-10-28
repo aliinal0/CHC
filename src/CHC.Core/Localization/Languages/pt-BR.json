@@ -33,6 +33,8 @@
   "admin.limited": "Modo limitado",
   "admin.limited.detail": "Os dados SMART e os sensores da CPU exigem permissão de administrador.",
   "admin.restart": "Executar como administrador",
+  "demo.title": "Modo demonstração",
+  "demo.detail": "Exibindo dados de exemplo, não o seu computador.",
 
   "scan.title": "Verificando seu computador…",
   "scan.step.sensors": "Iniciando os sensores de hardware",

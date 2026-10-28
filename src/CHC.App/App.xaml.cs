@@ -17,10 +17,15 @@ public partial class App : Application
         base.OnStartup(e);
         DispatcherUnhandledException += OnUnhandledException;
 
-        var settings = SettingsService.Load();
-        Loc.Instance.SetLanguage(settings.Language ?? CultureInfo.CurrentUICulture.Name);
+        // Command line: --demo shows a sample PC, --lang <code> picks a language for this run only.
+        var demo = e.Args.Contains("--demo", StringComparer.OrdinalIgnoreCase);
+        var langAt = Array.FindIndex(e.Args, a => a.Equals("--lang", StringComparison.OrdinalIgnoreCase));
+        var language = langAt >= 0 && langAt + 1 < e.Args.Length ? e.Args[langAt + 1] : null;
 
-        _main = new MainViewModel(settings);
+        var settings = SettingsService.Load();
+        Loc.Instance.SetLanguage(language ?? settings.Language ?? CultureInfo.CurrentUICulture.Name);
+
+        _main = new MainViewModel(settings, demo);
         var window = new MainWindow { DataContext = _main };
         ThemeService.Apply(settings.Theme, window);
         MainWindow = window;

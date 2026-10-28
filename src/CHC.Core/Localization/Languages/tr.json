@@ -29,6 +29,8 @@
   "admin.limited": "Sınırlı mod",
   "admin.limited.detail": "Disk SMART verileri ve CPU sensörleri yönetici izni gerektirir.",
   "admin.restart": "Yönetici olarak aç",
+  "demo.title": "Demo modu",
+  "demo.detail": "Örnek veriler gösteriliyor, bu sizin bilgisayarınız değil.",
   "scan.title": "Bilgisayarınız kontrol ediliyor…",
   "scan.step.sensors": "Donanım sensörleri başlatılıyor",
   "scan.step.system": "Sistem ve anakart bilgileri okunuyor",

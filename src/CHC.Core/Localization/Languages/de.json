@@ -33,6 +33,8 @@
   "admin.limited": "Eingeschränkter Modus",
   "admin.limited.detail": "SMART-Daten und CPU-Sensoren benötigen Administratorrechte.",
   "admin.restart": "Als Administrator starten",
+  "demo.title": "Demomodus",
+  "demo.detail": "Es werden Beispieldaten angezeigt, nicht Ihr Computer.",
 
   "scan.title": "Ihr Computer wird geprüft…",
   "scan.step.sensors": "Hardware-Sensoren werden gestartet",

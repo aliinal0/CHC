@@ -19,6 +19,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-pt-BR.png" width="860" alt="Visão geral do CHC com dados de exemplo">
+</p>
+
 ## Recursos
 
 - **Pontuação de saúde (0–100)** para o computador inteiro e para cada componente, com estados claros: *OK / Dica / Aviso / Crítico*.

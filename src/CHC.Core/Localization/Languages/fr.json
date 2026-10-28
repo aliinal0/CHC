@@ -33,6 +33,8 @@
   "admin.limited": "Mode limité",
   "admin.limited.detail": "Les données SMART et les capteurs du processeur nécessitent les droits d'administrateur.",
   "admin.restart": "Exécuter en administrateur",
+  "demo.title": "Mode démo",
+  "demo.detail": "Données d'exemple affichées, pas votre ordinateur.",
 
   "scan.title": "Vérification de votre ordinateur…",
   "scan.step.sensors": "Démarrage des capteurs matériels",

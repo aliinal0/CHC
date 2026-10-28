@@ -19,6 +19,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-en.png" width="860" alt="CHC overview with sample data">
+</p>
+
 ## Features
 
 - **Health score (0–100)** for the whole computer and for every component, with clear *OK / Tip / Warning / Critical* states.

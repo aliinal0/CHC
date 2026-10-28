@@ -85,6 +85,31 @@
                     <Border
                         Margin="0,0,0,10"
                         Padding="12,10"
+                        Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
+                        CornerRadius="8"
+                        Visibility="{Binding IsDemo, Converter={StaticResource VisibleWhen}}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon
+                                    FontSize="16"
+                                    Foreground="{StaticResource BrandBrush}"
+                                    Symbol="Info24" />
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{loc:Tr demo.title}" />
+                            </StackPanel>
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                Style="{StaticResource Caption}"
+                                Text="{loc:Tr demo.detail}" />
+                        </StackPanel>
+                    </Border>
+                    <Border
+                        Margin="0,0,0,10"
+                        Padding="12,10"
                         Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
                         CornerRadius="8"
                         Visibility="{Binding IsElevated, Converter={StaticResource VisibleWhen}, ConverterParameter=Invert}">

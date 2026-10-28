@@ -24,6 +24,17 @@ Language files live in `src/CHC.Core/Localization/Languages/`. The file name is 
 You can test a translation without building: put the file into a `Languages` folder next to `CHC.exe`
 and restart CHC.
 
+## Screenshots and demo mode
+
+Never put screenshots of your own computer in the repository. Start CHC in demo mode instead; it shows a
+made-up PC and changes nothing on your machine. `--lang` picks the language for that run only:
+
+```bash
+dotnet run --project src/CHC.App -- --demo --lang en
+```
+
+The README images live in `docs/screenshots/overview-<code>.png`, one per language.
+
 ## Adding a health check
 
 1. Collect the data in `src/CHC.Core/Collection/` and store it in the model (`src/CHC.Core/Models/Snapshot.cs`).

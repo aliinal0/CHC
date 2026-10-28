@@ -29,6 +29,8 @@
   "admin.limited": "Limited mode",
   "admin.limited.detail": "Disk SMART data and CPU sensors need administrator rights.",
   "admin.restart": "Run as administrator",
+  "demo.title": "Demo mode",
+  "demo.detail": "Showing sample data, not your computer.",
   "scan.title": "Checking your computer…",
   "scan.step.sensors": "Starting hardware sensors",
   "scan.step.system": "Reading system and motherboard information",

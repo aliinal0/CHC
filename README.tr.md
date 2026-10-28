@@ -19,6 +19,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-tr.png" width="860" alt="CHC genel bakış ekranı (örnek veriler)">
+</p>
+
 ## Özellikler
 
 - Bilgisayarın tamamı ve her bileşen için **0–100 arası sağlık puanı**, *Sorunsuz / İpucu / Uyarı / Kritik* durumlarıyla.

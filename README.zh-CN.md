@@ -19,6 +19,10 @@
   <b>简体中文</b>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-zh-CN.png" width="860" alt="CHC 概览（示例数据）">
+</p>
+
 ## 功能
 
 - 为整台电脑和每个组件给出 **0–100 的健康评分**，状态清晰：*正常 / 建议 / 警告 / 严重*。

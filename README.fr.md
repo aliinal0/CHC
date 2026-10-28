@@ -19,6 +19,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-fr.png" width="860" alt="Vue d'ensemble de CHC avec des données d'exemple">
+</p>
+
 ## Fonctionnalités
 
 - **Score de santé (0–100)** pour l'ordinateur entier et pour chaque composant, avec des états clairs : *OK / Conseil / Avertissement / Critique*.

@@ -33,6 +33,8 @@
   "admin.limited": "受限模式",
   "admin.limited.detail": "读取磁盘 SMART 数据和 CPU 传感器需要管理员权限。",
   "admin.restart": "以管理员身份运行",
+  "demo.title": "演示模式",
+  "demo.detail": "显示的是示例数据，并非你的电脑。",
 
   "scan.title": "正在检查你的电脑…",
   "scan.step.sensors": "正在启动硬件传感器",

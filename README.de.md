@@ -19,6 +19,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/overview-de.png" width="860" alt="CHC-Übersicht mit Beispieldaten">
+</p>
+
 ## Funktionen
 
 - **Gesundheitswert (0–100)** für den ganzen Computer und jede Komponente, mit klaren Zuständen *OK / Hinweis / Warnung / Kritisch*.
