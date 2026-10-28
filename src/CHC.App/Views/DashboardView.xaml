@@ -1,0 +1,286 @@
+<UserControl
+    x:Class="CHC.App.Views.DashboardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:CHC.App.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:CHC.App.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vm="clr-namespace:CHC.App.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:DashboardViewModel}"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,26,32,36">
+
+            <!--  Header  -->
+            <Grid>
+                <StackPanel>
+                    <TextBlock Style="{StaticResource PageTitle}" Text="{loc:Tr dashboard.title}" />
+                    <TextBlock Style="{StaticResource PageSubtitle}" Text="{Binding LastScanText}" />
+                </StackPanel>
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <ui:Button
+                        Margin="0,0,8,0"
+                        Command="{Binding Main.ScanCommand}"
+                        Content="{loc:Tr action.rescan}"
+                        Icon="{ui:SymbolIcon ArrowClockwise24}" />
+                    <ui:Button
+                        Appearance="Primary"
+                        Command="{Binding Main.Report.SavePdfCommand}"
+                        Content="{loc:Tr action.export}"
+                        Icon="{ui:SymbolIcon DocumentPdf24}" />
+                </StackPanel>
+            </Grid>
+
+            <!--  Hero  -->
+            <Grid Margin="0,22,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="360" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Grid
+                            Width="184"
+                            Height="184"
+                            Margin="0,4,0,0">
+                            <controls:ScoreRing
+                                RingBrush="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                                Thickness="14"
+                                Value="{Binding Score}" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="52"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Score}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                                    Text="{Binding RatingText}" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock
+                            MaxWidth="300"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Headline}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                        <UniformGrid
+                            Margin="0,16,0,0"
+                            Columns="3">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="22"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding Source={x:Static vm:SeverityValues.Critical}, Converter={StaticResource SeverityBrush}}"
+                                    Text="{Binding CriticalCount}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Style="{StaticResource Caption}"
+                                    Text="{loc:Tr dashboard.critical}" />
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="22"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding Source={x:Static vm:SeverityValues.Warning}, Converter={StaticResource SeverityBrush}}"
+                                    Text="{Binding WarningCount}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Style="{StaticResource Caption}"
+                                    Text="{loc:Tr dashboard.warnings}" />
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="22"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding Source={x:Static vm:SeverityValues.Info}, Converter={StaticResource SeverityBrush}}"
+                                    Text="{Binding InfoCount}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Style="{StaticResource Caption}"
+                                    Text="{loc:Tr dashboard.notes}" />
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CardTitle}" Text="{loc:Tr dashboard.system}" />
+                        <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding SystemRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:SummaryRow}">
+                                    <Grid Margin="0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="36"
+                                            Height="36"
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                            CornerRadius="8">
+                                            <ui:SymbolIcon
+                                                FontSize="18"
+                                                Foreground="{StaticResource BrandBrush}"
+                                                Symbol="{Binding Icon}" />
+                                        </Border>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center">
+                                            <TextBlock
+                                                FontSize="11.5"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Text="{Binding Label}" />
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Value}"
+                                                TextTrimming="CharacterEllipsis"
+                                                ToolTip="{Binding Value}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!--  Components  -->
+            <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr dashboard.components}" />
+            <ItemsControl Margin="0,0,-12,0" ItemsSource="{Binding Cards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <controls:ResponsiveGrid MaxColumns="4" MinItemWidth="290" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:ComponentCardViewModel}">
+                        <Button
+                            Margin="0,0,12,12"
+                            Command="{Binding OpenCommand}"
+                            Style="{StaticResource CardButton}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Background="{Binding Severity, Converter={StaticResource SeverityBrush}, ConverterParameter=36}" Style="{StaticResource IconBadge}">
+                                        <ui:SymbolIcon
+                                            FontSize="20"
+                                            Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                                            Symbol="{Binding Icon}" />
+                                    </Border>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="12,0,8,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource CardTitle}"
+                                        Text="{Binding Title}" />
+                                    <Border
+                                        Grid.Column="2"
+                                        Background="{Binding Severity, Converter={StaticResource SeverityBrush}, ConverterParameter=40}"
+                                        Style="{StaticResource Pill}">
+                                        <TextBlock
+                                            FontSize="11.5"
+                                            FontWeight="SemiBold"
+                                            Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                                            Text="{Binding SeverityText}" />
+                                    </Border>
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,12,0,0"
+                                    FontSize="13"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding Subtitle}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTip="{Binding Subtitle}" />
+                                <ItemsControl
+                                    Grid.Row="2"
+                                    Margin="0,12,0,0"
+                                    ItemsSource="{Binding Metrics}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="2" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type vm:HighlightViewModel}">
+                                            <StackPanel Margin="0,0,8,0">
+                                                <TextBlock
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding Label}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    Style="{StaticResource BigValue}"
+                                                    Text="{Binding Value}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <controls:Sparkline
+                                    Grid.Row="3"
+                                    Height="40"
+                                    Margin="0,12,0,0"
+                                    StrokeColor="{StaticResource BrandColor}"
+                                    Values="{Binding History}"
+                                    Visibility="{Binding HasSpark, Converter={StaticResource VisibleWhen}}" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!--  Issues  -->
+            <TextBlock Style="{StaticResource SectionTitle}" Text="{loc:Tr dashboard.issues}" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <ItemsControl ItemTemplate="{StaticResource FindingTemplate}" ItemsSource="{Binding Issues}" />
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding HasIssues, Converter={StaticResource VisibleWhen}, ConverterParameter=Invert}">
+                        <ui:SymbolIcon
+                            FontSize="20"
+                            Foreground="{Binding Source={x:Static vm:SeverityValues.Good}, Converter={StaticResource SeverityBrush}}"
+                            Symbol="CheckmarkCircle24" />
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource Body}"
+                            Text="{loc:Tr dashboard.noissues}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

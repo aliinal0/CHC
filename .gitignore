@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+publish/
+artifacts/
+*.nupkg
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.rsuser
+*.DotSettings.user
+
+# Test results
+TestResults/
+*.trx
+coverage*/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Generated reports while testing
+CHC-Report-*.html
+CHC-Report-*.pdf
+CHC-Report-*.json

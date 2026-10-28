@@ -1,0 +1,368 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:CHC.App.Converters"
+    xmlns:controls="clr-namespace:CHC.App.Controls"
+    xmlns:loc="clr-namespace:CHC.App.Localization"
+    xmlns:vm="clr-namespace:CHC.App.ViewModels"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--  Converters  -->
+    <conv:SeverityBrushConverter x:Key="SeverityBrush" />
+    <conv:SeverityColorConverter x:Key="SeverityColor" />
+    <conv:SeveritySymbolConverter x:Key="SeveritySymbol" />
+    <conv:VisibleWhenConverter x:Key="VisibleWhen" />
+
+    <!--  Brand  -->
+    <Color x:Key="BrandColor">#22C5E0</Color>
+    <Color x:Key="BrandColor2">#6366F1</Color>
+    <SolidColorBrush x:Key="BrandBrush" Color="{StaticResource BrandColor}" />
+    <LinearGradientBrush x:Key="BrandGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="{StaticResource BrandColor}" />
+        <GradientStop Offset="1" Color="{StaticResource BrandColor2}" />
+    </LinearGradientBrush>
+
+    <!--  Typography  -->
+    <Style x:Key="PageTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="PageSubtitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Margin" Value="0,4,0,0" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style x:Key="SectionTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="2,26,0,12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="CardTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="Caption" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style x:Key="Overline" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+    </Style>
+    <Style x:Key="BigValue" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="21" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="Body" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+
+    <!--  Surfaces  -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="20,18" />
+    </Style>
+    <Style x:Key="Tile" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="Margin" Value="0,0,10,10" />
+    </Style>
+    <Style x:Key="IconBadge" TargetType="Border">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <!--  Clickable card (dashboard components)  -->
+    <Style x:Key="CardButton" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="Bd"
+                        Padding="18,16"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.85" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  Sidebar navigation  -->
+    <Style x:Key="NavRadio" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border
+                        x:Name="Bd"
+                        Padding="12,9"
+                        Background="Transparent"
+                        CornerRadius="6">
+                        <Grid>
+                            <Border
+                                x:Name="Indicator"
+                                Width="3"
+                                Height="16"
+                                Margin="-12,0,0,0"
+                                HorizontalAlignment="Left"
+                                Background="{StaticResource BrandBrush}"
+                                CornerRadius="2"
+                                Visibility="Collapsed" />
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate x:Key="NavTemplate" DataType="{x:Type vm:NavItem}">
+        <RadioButton
+            AutomationProperties.Name="{Binding Title}"
+            GroupName="nav"
+            IsChecked="{Binding IsSelected, Mode=TwoWay}"
+            Style="{StaticResource NavRadio}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:SymbolIcon FontSize="18" Symbol="{Binding Icon}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="12,0,8,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Text="{Binding Title}"
+                    TextTrimming="CharacterEllipsis" />
+                <Ellipse
+                    Grid.Column="2"
+                    Width="8"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    Fill="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                    Visibility="{Binding Severity, Converter={StaticResource VisibleWhen}}" />
+            </Grid>
+        </RadioButton>
+    </DataTemplate>
+
+    <!--  Status pill: set DataContext/Tag-free by binding Severity + text in place  -->
+    <Style x:Key="Pill" TargetType="Border">
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Padding" Value="10,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <!--  Finding row  -->
+    <DataTemplate x:Key="FindingTemplate" DataType="{x:Type vm:FindingViewModel}">
+        <Grid Margin="0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border
+                Width="34"
+                Height="34"
+                VerticalAlignment="Top"
+                Background="{Binding Severity, Converter={StaticResource SeverityBrush}, ConverterParameter=40}"
+                CornerRadius="17">
+                <ui:SymbolIcon
+                    FontSize="18"
+                    Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                    Symbol="{Binding Severity, Converter={StaticResource SeveritySymbol}}" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="14,0,12,0">
+                <TextBlock
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Title}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Margin="0,3,0,0"
+                    Style="{StaticResource Caption}"
+                    Text="{Binding Detail}"
+                    Visibility="{Binding Detail, Converter={StaticResource VisibleWhen}}" />
+                <Grid Margin="0,6,0,0" Visibility="{Binding Recommendation, Converter={StaticResource VisibleWhen}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon
+                        Margin="0,1,6,0"
+                        VerticalAlignment="Top"
+                        FontSize="14"
+                        Foreground="{StaticResource BrandBrush}"
+                        Symbol="Lightbulb20" />
+                    <TextBlock
+                        Grid.Column="1"
+                        FontSize="13"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Recommendation}"
+                        TextWrapping="Wrap" />
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top" Orientation="Horizontal">
+                <Border
+                    Margin="0,0,6,0"
+                    Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                    Style="{StaticResource Pill}"
+                    Visibility="{Binding ShowComponent, Converter={StaticResource VisibleWhen}}">
+                    <TextBlock FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding Component}" />
+                </Border>
+                <Border Background="{Binding Severity, Converter={StaticResource SeverityBrush}, ConverterParameter=40}" Style="{StaticResource Pill}">
+                    <TextBlock
+                        FontSize="11.5"
+                        FontWeight="SemiBold"
+                        Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                        Text="{Binding SeverityText}" />
+                </Border>
+            </StackPanel>
+        </Grid>
+    </DataTemplate>
+
+    <!--  Headline tile  -->
+    <DataTemplate x:Key="HighlightTemplate" DataType="{x:Type vm:HighlightViewModel}">
+        <Border Style="{StaticResource Tile}">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Caption}" Text="{Binding Label}" TextWrapping="NoWrap" />
+                <TextBlock Margin="0,2,0,0" Style="{StaticResource BigValue}" Text="{Binding Value}" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!--  Usage meter  -->
+    <DataTemplate x:Key="MeterTemplate" DataType="{x:Type vm:MeterViewModel}">
+        <StackPanel Margin="0,6,0,8">
+            <Grid>
+                <TextBlock FontSize="13.5" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding Label}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource Caption}"
+                    Text="{Binding Caption}" />
+            </Grid>
+            <controls:MeterBar
+                Margin="0,6,0,0"
+                BarBrush="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                Value="{Binding Percent}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <!--  Sensor table  -->
+    <DataTemplate x:Key="SensorHeaderTemplate">
+        <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="180" />
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="120" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource Overline}" Text="{loc:Tr col.sensor}" />
+            <TextBlock Grid.Column="1" Style="{StaticResource Overline}" Text="{loc:Tr col.type}" />
+            <TextBlock Grid.Column="2" Style="{StaticResource Overline}" Text="{loc:Tr col.value}" />
+            <TextBlock Grid.Column="3" Style="{StaticResource Overline}" Text="{loc:Tr col.min}" />
+            <TextBlock Grid.Column="4" Style="{StaticResource Overline}" Text="{loc:Tr col.max}" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="SensorRowTemplate" DataType="{x:Type vm:SensorRowViewModel}">
+        <Grid Margin="0,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="180" />
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="120" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                FontSize="13"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{Binding Name}"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock
+                Grid.Column="1"
+                FontSize="13"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding TypeName}" />
+            <TextBlock
+                Grid.Column="2"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{Binding Value}" />
+            <TextBlock
+                Grid.Column="3"
+                FontSize="13"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding Min}" />
+            <TextBlock
+                Grid.Column="4"
+                FontSize="13"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding Max}" />
+        </Grid>
+    </DataTemplate>
+
+    <Style x:Key="ReadOnlyGrid" TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+        <Setter Property="AutoGenerateColumns" Value="True" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="CanUserAddRows" Value="False" />
+        <Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="GridLinesVisibility" Value="None" />
+        <Setter Property="SelectionUnit" Value="FullRow" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="controls:ScrollBubble.IsEnabled" Value="True" />
+    </Style>
+</ResourceDictionary>
