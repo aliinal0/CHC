@@ -1,0 +1,101 @@
+name: Bug report
+description: CHC crashes, something doesn't work, or a value, warning or diagnosis looks wrong.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make CHC better! English is preferred, but you can also write in your own language.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: What kind of problem is it?
+      options:
+        - CHC crashes or doesn't start
+        - A value is wrong or missing (temperature, speed, size, power...)
+        - A warning, score or diagnosis looks wrong
+        - Game performance (FPS) measurement
+        - Network test
+        - Updates (a wrong or missing update)
+        - Devices (a device missing, wrongly listed or wrongly warned about)
+        - History, Changes or Programs
+        - Look back (reading Windows' usage records)
+        - The first-run guide
+        - Report (PDF, web page or JSON)
+        - Installer
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead? Screenshots help a lot.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can it be repeated?
+      placeholder: |
+        1. Open the Performance page
+        2. Start a game and click ...
+        3. ...
+
+  - type: input
+    id: version
+    attributes:
+      label: CHC version
+      description: Shown under Settings → About.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: admin
+    attributes:
+      label: Did CHC run as administrator?
+      options:
+        - "Yes"
+        - "No"
+        - I don't know
+    validations:
+      required: true
+
+  - type: dropdown
+    id: pawnio
+    attributes:
+      label: Is the PawnIO driver installed?
+      options:
+        - "Yes"
+        - "No"
+        - I don't know
+    validations:
+      required: true
+
+  - type: textarea
+    id: pc
+    attributes:
+      label: Your PC
+      description: Desktop or laptop, and the parts that matter for this problem.
+      placeholder: |
+        Laptop, Intel Core i7-12700H, NVIDIA GeForce RTX 3060 Laptop GPU, 16 GB
+
+  - type: textarea
+    id: report
+    attributes:
+      label: JSON report
+      description: |
+        Click **Report → Save JSON data** in CHC and drag the file here (zip it if GitHub doesn't accept it).
+        It lets us see exactly what CHC read on your PC. Serial numbers are hidden unless you turned them on.

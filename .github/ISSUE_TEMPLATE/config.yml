@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Share how CHC works on your PC
+    url: https://github.com/aliinal0/CHC/discussions/categories/hardware-reports
+    about: Tell us what CHC got right and what it missed on your hardware. This helps a lot, even when nothing is broken.
+  - name: Questions and help
+    url: https://github.com/aliinal0/CHC/discussions/categories/q-a
+    about: Not sure what a result means or what to do about it? Ask here.
+  - name: Report a security problem
+    url: https://github.com/aliinal0/CHC/security/advisories/new
+    about: Please report security problems privately, not in a public issue.

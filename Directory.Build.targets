@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- FPS capture only reads live DXGI/D3D9 events. TraceEvent's symbol reader (msdia140) and kernel trace
+       merge helper (KernelTraceControl) are never used, so they are not shipped. TraceEvent adds them through
+       buildTransitive, which is why this applies to every project and not just CHC.Core. -->
+  <Target Name="DropTraceEventNativeHelpers" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <None Remove="@(None)" Condition="'%(Filename)' == 'msdia140' Or $([System.String]::Copy('%(Filename)').StartsWith('KernelTraceControl'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>

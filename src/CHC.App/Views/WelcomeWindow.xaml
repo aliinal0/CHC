@@ -1,0 +1,369 @@
+<ui:FluentWindow
+    x:Class="CHC.App.Views.WelcomeWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:CHC.App.Controls"
+    xmlns:loc="clr-namespace:CHC.App.Localization"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vm="clr-namespace:CHC.App.ViewModels"
+    Title="{loc:Tr welcome.title}"
+    Width="820"
+    Height="640"
+    Background="{DynamicResource PageBrush}"
+    ExtendsContentIntoTitleBar="True"
+    FontFamily="{DynamicResource AppFont}"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    WindowBackdropType="None"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterOwner">
+    <ui:FluentWindow.Resources>
+
+        <!--  A setting: its name and control, then a short note on what it does and why.  -->
+        <Style TargetType="controls:OptionCard">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="controls:OptionCard">
+                        <Border Margin="0,0,0,10" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource CardTitle}"
+                                        Text="{TemplateBinding Title}" />
+                                    <ContentPresenter Grid.Column="1" Margin="16,0,0,0" />
+                                </Grid>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:SymbolIcon
+                                        Margin="0,1,8,0"
+                                        VerticalAlignment="Top"
+                                        FontSize="15"
+                                        Foreground="{StaticResource BrandBrush}"
+                                        Symbol="Info24" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap">
+                                            <Run FontWeight="SemiBold" Text="{loc:Tr welcome.note.what}" />
+                                            <Run Text="{Binding What, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <TextBlock
+                                            Margin="0,2,0,0"
+                                            Style="{StaticResource Caption}"
+                                            TextWrapping="Wrap">
+                                            <Run FontWeight="SemiBold" Text="{loc:Tr welcome.note.why}" />
+                                            <Run Text="{Binding Why, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  A line of the tour.  -->
+        <DataTemplate x:Key="WelcomeRowTemplate" DataType="{x:Type vm:WelcomeRow}">
+            <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border
+                    Width="42"
+                    Height="42"
+                    VerticalAlignment="Top"
+                    Background="{DynamicResource SubtleBrush}"
+                    CornerRadius="11">
+                    <ui:SymbolIcon
+                        FontSize="21"
+                        Foreground="{StaticResource BrandBrush}"
+                        Symbol="{Binding Icon}" />
+                </Border>
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="14,0,0,0"
+                    VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource CardTitle}" Text="{Binding Name}" />
+                    <TextBlock
+                        Margin="0,2,0,0"
+                        Style="{StaticResource Body}"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{Binding Text}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ui:TitleBar ShowMaximize="False" ShowMinimize="False" />
+
+        <ScrollViewer
+            Grid.Row="1"
+            FocusVisualStyle="{x:Null}"
+            VerticalScrollBarVisibility="Auto">
+            <Grid Margin="44,0,44,8">
+
+                <!--  Welcome  -->
+                <StackPanel Visibility="{Binding IsIntro, Converter={StaticResource VisibleWhen}}">
+                    <Image
+                        Width="84"
+                        Height="84"
+                        Margin="0,6,0,0"
+                        HorizontalAlignment="Left"
+                        Source="/Assets/chc.png" />
+                    <TextBlock
+                        Margin="0,18,0,0"
+                        Style="{StaticResource PageTitle}"
+                        Text="{loc:Tr welcome.title}" />
+                    <TextBlock
+                        Margin="0,8,0,26"
+                        FontSize="15.5"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{loc:Tr welcome.text}"
+                        TextWrapping="Wrap" />
+                    <ItemsControl ItemTemplate="{StaticResource WelcomeRowTemplate}" ItemsSource="{Binding IntroRows}" />
+                </StackPanel>
+
+                <!--  The tour  -->
+                <StackPanel Visibility="{Binding IsTour, Converter={StaticResource VisibleWhen}}">
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        Style="{StaticResource PageTitle}"
+                        Text="{Binding Tour.Title}" />
+                    <TextBlock
+                        Margin="0,8,0,28"
+                        FontSize="15"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{Binding Tour.Text}"
+                        TextWrapping="Wrap" />
+                    <ItemsControl ItemTemplate="{StaticResource WelcomeRowTemplate}" ItemsSource="{Binding Tour.Rows}" />
+                </StackPanel>
+
+                <!--  Settings: how it looks and runs  -->
+                <StackPanel Visibility="{Binding IsFirstSettings, Converter={StaticResource VisibleWhen}}">
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        Style="{StaticResource PageTitle}"
+                        Text="{loc:Tr welcome.settings1.title}" />
+                    <TextBlock
+                        Margin="0,6,0,18"
+                        FontSize="14"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{loc:Tr welcome.settings1.text}"
+                        TextWrapping="Wrap" />
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.theme}"
+                        What="{loc:Tr welcome.theme.what}"
+                        Why="{loc:Tr welcome.theme.why}">
+                        <Border Background="{DynamicResource SubtleBrush}" CornerRadius="7">
+                            <ListBox
+                                ItemsSource="{Binding Settings.Themes}"
+                                SelectedItem="{Binding Settings.SelectedTheme}"
+                                Style="{StaticResource Segments}" />
+                        </Border>
+                    </controls:OptionCard>
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.history}"
+                        What="{loc:Tr welcome.history.what}"
+                        Why="{loc:Tr welcome.history.why}">
+                        <ui:ToggleSwitch AutomationProperties.AutomationId="HistorySwitch" IsChecked="{Binding Settings.RecordHistory}" />
+                    </controls:OptionCard>
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.startup}"
+                        What="{loc:Tr welcome.startup.what}"
+                        Why="{loc:Tr welcome.startup.why}">
+                        <ui:ToggleSwitch AutomationProperties.AutomationId="StartupSwitch" IsChecked="{Binding StartWithWindows}" />
+                    </controls:OptionCard>
+                </StackPanel>
+
+                <!--  Settings: what happens on closing, and how much it can see  -->
+                <StackPanel Visibility="{Binding IsSecondSettings, Converter={StaticResource VisibleWhen}}">
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        Style="{StaticResource PageTitle}"
+                        Text="{loc:Tr welcome.settings2.title}" />
+                    <TextBlock
+                        Margin="0,6,0,18"
+                        FontSize="14"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{loc:Tr welcome.settings2.text}"
+                        TextWrapping="Wrap" />
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.close}"
+                        What="{loc:Tr welcome.close.what}"
+                        Why="{loc:Tr welcome.close.why}"
+                        Visibility="{Binding Settings.RecordHistory, Converter={StaticResource VisibleWhen}}">
+                        <Border Background="{DynamicResource SubtleBrush}" CornerRadius="7">
+                            <ListBox
+                                ItemsSource="{Binding Settings.CloseChoices}"
+                                SelectedItem="{Binding Settings.SelectedCloseChoice}"
+                                Style="{StaticResource Segments}" />
+                        </Border>
+                    </controls:OptionCard>
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.admin}"
+                        What="{loc:Tr welcome.admin.what}"
+                        Why="{loc:Tr welcome.admin.why}">
+                        <Grid>
+                            <ui:ToggleSwitch
+                                AutomationProperties.AutomationId="AdminSwitch"
+                                IsChecked="{Binding RestartAsAdmin}"
+                                ToolTip="{loc:Tr welcome.admin.tip}"
+                                Visibility="{Binding IsElevated, Converter={StaticResource VisibleWhen}, ConverterParameter=Invert}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Foreground="{Binding Source={x:Static vm:SeverityValues.Good}, Converter={StaticResource SeverityBrush}}"
+                                Text="{loc:Tr welcome.admin.active}"
+                                Visibility="{Binding IsElevated, Converter={StaticResource VisibleWhen}}" />
+                        </Grid>
+                    </controls:OptionCard>
+
+                </StackPanel>
+
+                <!--  Settings: what it may look up beyond its own measurements  -->
+                <StackPanel Visibility="{Binding IsThirdSettings, Converter={StaticResource VisibleWhen}}">
+                    <TextBlock
+                        Margin="0,6,0,0"
+                        Style="{StaticResource PageTitle}"
+                        Text="{loc:Tr welcome.settings3.title}" />
+                    <TextBlock
+                        Margin="0,6,0,18"
+                        FontSize="14"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{loc:Tr welcome.settings3.text}"
+                        TextWrapping="Wrap" />
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.updates}"
+                        What="{loc:Tr welcome.updates.what}"
+                        Why="{loc:Tr welcome.updates.why}">
+                        <ui:ToggleSwitch
+                            AutomationProperties.AutomationId="UpdatesSwitch"
+                            IsChecked="{Binding Settings.CheckUpdatesAutomatically}" />
+                    </controls:OptionCard>
+
+                    <controls:OptionCard
+                        Title="{loc:Tr welcome.notes}"
+                        What="{loc:Tr welcome.notes.what}"
+                        Why="{loc:Tr welcome.notes.why}">
+                        <ui:ToggleSwitch
+                            AutomationProperties.AutomationId="NotesSwitch"
+                            IsChecked="{Binding ReadNotes}"
+                            IsEnabled="{Binding CanChangeSystem}" />
+                    </controls:OptionCard>
+                </StackPanel>
+
+                <!--  The end  -->
+                <StackPanel Visibility="{Binding IsDone, Converter={StaticResource VisibleWhen}}">
+                    <Border
+                        Width="72"
+                        Height="72"
+                        Margin="0,40,0,0"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource SubtleBrush}"
+                        CornerRadius="18">
+                        <ui:SymbolIcon
+                            FontSize="38"
+                            Foreground="#2EB86A"
+                            Symbol="CheckmarkCircle24" />
+                    </Border>
+                    <TextBlock
+                        Margin="0,20,0,0"
+                        Style="{StaticResource PageTitle}"
+                        Text="{loc:Tr welcome.done.title}" />
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        FontSize="15.5"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{loc:Tr welcome.done.text}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Margin="0,12,0,0"
+                        FontSize="14"
+                        Foreground="{DynamicResource TextSecondaryBrush}"
+                        Text="{loc:Tr welcome.done.later}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!--  Skip, how far along, back and next  -->
+        <Grid Grid.Row="2" Margin="44,6,44,22">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ui:Button
+                HorizontalAlignment="Left"
+                Appearance="Transparent"
+                Command="{Binding SkipCommand}"
+                Content="{Binding SkipText}"
+                Visibility="{Binding ShowSkip, Converter={StaticResource VisibleWhen}}" />
+            <ItemsControl
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                ItemsSource="{Binding Dots}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:WelcomeDot}">
+                        <Ellipse
+                            Width="7"
+                            Height="7"
+                            Margin="3,0">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{DynamicResource BorderStrongBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Active}" Value="True">
+                                            <Setter Property="Fill" Value="{StaticResource BrandBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <ui:Button
+                    Margin="0,0,8,0"
+                    Command="{Binding BackCommand}"
+                    Content="{loc:Tr welcome.back}"
+                    Visibility="{Binding ShowBack, Converter={StaticResource VisibleWhen}}" />
+                <ui:Button
+                    Appearance="Primary"
+                    Command="{Binding NextCommand}"
+                    Content="{Binding NextText}"
+                    IsDefault="True" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

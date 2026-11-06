@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Authors>aliinal0</Authors>
+    <Product>CHC - Computer Health Check</Product>
+    <Copyright>Copyright (c) 2026 aliinal0</Copyright>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>embedded</DebugType>
+    <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
+    <!-- Keep the folder of whoever builds CHC out of the shipped binaries:
+         source paths in the embedded PDB become /_/src/... instead of the local path.
+         DeterministicSourcePaths does the same for the Source Link map, which PathMap alone leaves
+         with the local repository folder; PathMap stays for builds outside a git checkout. -->
+    <DeterministicSourcePaths>true</DeterministicSourcePaths>
+    <PathMap>$(MSBuildThisFileDirectory)=/_/</PathMap>
+  </PropertyGroup>
+</Project>

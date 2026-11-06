@@ -1,0 +1,79 @@
+title: "[PC] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        CHC is tested on only a few computers, so every PC helps. Tell us what CHC got right and what it missed.
+        English is preferred, but you can also write in your own language. Please put your main parts in the title,
+        for example `[PC] Ryzen 5 5600 + RX 6700 XT, desktop`.
+
+  - type: input
+    id: version
+    attributes:
+      label: CHC version
+      description: Shown under Settings → About.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Desktop or laptop?
+      options:
+        - Desktop
+        - Laptop
+        - Mini PC or other
+    validations:
+      required: true
+
+  - type: textarea
+    id: parts
+    attributes:
+      label: Your parts
+      description: Copy them from CHC's overview page.
+      placeholder: |
+        System: MSI MAG B550 TOMAHAWK
+        Processor: AMD Ryzen 5 5600
+        Memory: 16 GB DDR4
+        Graphics: AMD Radeon RX 6700 XT
+        Operating system: Windows 11 Home 23H2
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: setup
+    attributes:
+      label: How CHC ran
+      options:
+        - label: As administrator
+        - label: With the PawnIO driver installed
+
+  - type: checkboxes
+    id: worked
+    attributes:
+      label: What worked
+      description: Tick what CHC showed correctly.
+      options:
+        - label: Processor temperature
+        - label: Graphics card temperature and power
+        - label: Disk health (SMART)
+        - label: Fan speeds
+        - label: Memory speed and XMP/EXPO
+        - label: Battery (laptops)
+        - label: FPS measurement in a game
+        - label: Network test
+
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What was wrong, missing or confusing?
+      description: Wrong values, warnings that don't fit your PC, explanations that didn't help.
+
+  - type: textarea
+    id: report
+    attributes:
+      label: JSON report (optional)
+      description: |
+        **Report → Save JSON data**, then drag the file here (zip it if GitHub doesn't accept it).
+        Serial numbers are hidden unless you turned them on.

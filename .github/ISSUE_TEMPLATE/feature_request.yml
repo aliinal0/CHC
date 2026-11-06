@@ -1,0 +1,29 @@
+name: Idea or feature request
+description: A new check, a better explanation, a game CHC should understand, or anything else.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! English is preferred, but you can also write in your own language.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: For example "My PC stutters in a game and CHC doesn't say why".
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should CHC do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: other
+    attributes:
+      label: Anything else?
+      description: Other programs that already do this, links, screenshots.

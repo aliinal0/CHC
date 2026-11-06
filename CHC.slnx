@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CHC.App/CHC.App.csproj" />
+    <Project Path="src/CHC.Core/CHC.Core.csproj" />
+  </Folder>
+</Solution>

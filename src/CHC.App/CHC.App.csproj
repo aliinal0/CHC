@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <!-- Only for the notification area icon (NotifyIcon); WPF has none of its own. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- WFO0003 wants the DPI mode set through Windows Forms; this is a WPF app, so the manifest stays in charge. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <RootNamespace>CHC.App</RootNamespace>
+    <AssemblyName>CHC</AssemblyName>
+    <ApplicationIcon>Assets\chc.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyTitle>CHC - Computer Health Check</AssemblyTitle>
+    <!-- Single-file publish: bundle WebView2Loader.dll too, so CHC.exe is the only file to ship. -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Keep WPF's names (Application, MessageBox, Brush...) unambiguous: Windows Forms is used by full name only. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CHC.Core\CHC.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\chc.png" />
+    <Resource Include="Assets\chc.ico" />
+    <Resource Include="Assets\Fonts\*.ttf" />
+  </ItemGroup>
+
+</Project>
