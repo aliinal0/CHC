@@ -23,9 +23,16 @@ public static class WindowsUpdates
         dynamic session = Activator.CreateInstance(type)!;
         dynamic searcher = session.CreateUpdateSearcher();
         searcher.Online = true;
-        dynamic result = searcher.Search("IsInstalled=0 and IsHidden=0");
-
         var list = new List<AvailableUpdate>();
+        Add(searcher.Search("IsInstalled=0 and IsHidden=0"), list);
+        // Most makers' drivers are only offered under "Optional updates". If that list can't be had, the rest still counts.
+        try { Add(searcher.Search("IsInstalled=0 and IsHidden=0 and DeploymentAction='OptionalInstallation'"), list); }
+        catch (COMException) { }
+        return list;
+    }
+
+    private static void Add(dynamic result, List<AvailableUpdate> list)
+    {
         foreach (dynamic update in result.Updates)
         {
             var definitions = false;
@@ -36,14 +43,15 @@ public static class WindowsUpdates
             var driver = (int)update.Type == 2;
             // A graphics driver from here is usually older than the maker's, which is looked up on its own.
             if (driver && string.Equals((string?)update.DriverClass, "Display", StringComparison.OrdinalIgnoreCase)) continue;
+            var title = (string)update.Title;
+            if (list.Any(u => u.Name == title)) continue;
             list.Add(new AvailableUpdate
             {
                 Kind = driver ? UpdateKind.WindowsDriver : UpdateKind.Windows,
-                Name = (string)update.Title,
+                Name = title,
                 Url = driver ? MakerPages.OptionalUpdates : MakerPages.WindowsUpdate,
             });
         }
-        return list;
     }
 }
 
@@ -161,11 +169,11 @@ public static class UpdateChecker
 
         info.CheckedAt = DateTime.Now;
         info.Incomplete = drivers.Result is null || windows.Result is null || programs.Result is null;
-        Add(info, drivers.Result, before, UpdateKind.GraphicsDriver, UpdateKind.ChipsetDriver);
+        Add(info, drivers.Result, before, UpdateKind.GraphicsDriver, UpdateKind.ChipsetDriver, UpdateKind.DeviceDriver);
         Add(info, windows.Result, before, UpdateKind.WindowsDriver, UpdateKind.Windows);
         Add(info, programs.Result, before, UpdateKind.Runtime, UpdateKind.Program);
         if (drivers.Result is null) info.KnownGraphics = before?.KnownGraphics ?? [];
-        info.Items = info.Items.OrderBy(i => i.Kind).ToList();
+        info.Items = info.Items.OrderBy(i => i.Rank).ToList();
         KeepCurrent(info, s);
         return info;
     }
@@ -177,6 +185,7 @@ public static class UpdateChecker
         {
             UpdateKind.GraphicsDriver => InstalledGraphics(item.Name, s) is { } now && !UpdateVersions.IsNewer(item.Latest, now),
             UpdateKind.ChipsetDriver => AmdDrivers.InstalledChipset() is { } now && !UpdateVersions.IsNewer(item.Latest, now),
+            UpdateKind.DeviceDriver => s.Drivers.FirstOrDefault(d => d.HardwareId == item.HardwareId) is { } now && !UpdateVersions.IsNewer(item.Latest, now.Version),
             _ => false,
         });
         foreach (var item in info.Items.Where(i => i.Kind == UpdateKind.GraphicsDriver))
@@ -221,6 +230,19 @@ public static class UpdateChecker
 
         try
         {
+            if (await IntelAsync(http, s, info) is { } intel)
+            {
+                anyAnswer = true;
+                list.AddRange(intel);
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException or IOException)
+        {
+            anyFailure = true;
+        }
+
+        try
+        {
             if (await ChipsetAsync(http, s) is { } chipset)
             {
                 anyAnswer = true;
@@ -237,6 +259,41 @@ public static class UpdateChecker
     }
 
     private sealed record Answer(AvailableUpdate? Update);
+
+    /// <summary>
+    /// Intel's graphics, Wi-Fi, Bluetooth and network drivers, compared with Intel's own list. Null on a PC without
+    /// Intel devices, where there is nothing to ask.
+    /// </summary>
+    private static async Task<List<AvailableUpdate>?> IntelAsync(HttpClient http, SystemSnapshot s, UpdateInfo info)
+    {
+        var graphics = s.Gpus.Where(g => !g.IsVirtual && !g.UsesBasicDriver && IntelDrivers.IsIntel(g.PnpDeviceId))
+            .Select(g => (Gpu: g, Device: new DeviceDriver(g.Name, HardwarePart(g.PnpDeviceId), g.DriverVersion))).ToList();
+        var others = s.Drivers.Where(d => IntelDrivers.IsIntel(d.HardwareId) && d.Class != "DISPLAY")
+            .Select(d => new DeviceDriver(d.Device, d.HardwareId, d.Version)).ToList();
+        if (graphics.Count + others.Count == 0) return null;
+        if (await IntelDrivers.DownloadAsync(http) is not { } list) return null;
+
+        var (newer, listed) = IntelDrivers.Match(list, [.. graphics.Select(g => g.Device), .. others], Environment.OSVersion.Version.Build >= 22000);
+        foreach (var (gpu, device) in graphics)
+            if (listed.Contains(device.HardwareId) && !info.KnownGraphics.Contains(gpu.Name)) info.KnownGraphics.Add(gpu.Name);
+
+        return newer.Select(n => new AvailableUpdate
+        {
+            Kind = n.Category == "Graphics" ? UpdateKind.GraphicsDriver : UpdateKind.DeviceDriver,
+            Name = n.Device.Name,
+            Installed = n.Device.Version,
+            Latest = n.Version,
+            Released = n.Released,
+            Url = n.Url,
+            HardwareId = n.Device.HardwareId,
+        }).ToList();
+    }
+
+    private static string HardwarePart(string deviceId)
+    {
+        var at = deviceId.LastIndexOf('\\');
+        return (at > 0 && deviceId.IndexOf('\\') != at ? deviceId[..at] : deviceId).ToUpperInvariant();
+    }
 
     private static async Task<Answer?> GraphicsAsync(HttpClient http, GpuInfo gpu, UpdateInfo info)
     {
@@ -273,6 +330,7 @@ public static class UpdateChecker
     {
         var gpu = s.Gpus.FirstOrDefault(g => g.Name == card);
         if (gpu is null) return null;
-        return NvidiaDrivers.IsNvidia(card) ? NvidiaDrivers.PublicVersion(gpu.DriverVersion) : AmdDrivers.InstalledSoftware();
+        if (NvidiaDrivers.IsNvidia(card)) return NvidiaDrivers.PublicVersion(gpu.DriverVersion);
+        return IntelDrivers.IsIntel(gpu.PnpDeviceId) ? gpu.DriverVersion : AmdDrivers.InstalledSoftware();
     }
 }

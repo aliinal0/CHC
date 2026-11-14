@@ -1,6 +1,6 @@
 # Third-party notices
 
-CHC itself is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+CHC itself is licensed under the [Mozilla Public License 2.0](LICENSE).
 It uses the following open source components, which keep their own licenses.
 Their license terms apply to those components only, not to CHC's own code.
 

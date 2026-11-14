@@ -21,6 +21,9 @@ public static class SnapshotCollector
             Sensors = sensors,
         };
 
+        // First, before the rest of the scan keeps the processor busy.
+        snapshot.Speed.CpuSpeedPercent = Safe(CpuBenchmark.Measure, null);
+
         progress?.Report("scan.step.system");
         snapshot.Os = Safe(SystemCollector.CollectOs, new OsInfo());
         snapshot.Board = Safe(SystemCollector.CollectBoard, new BoardInfo());
@@ -48,6 +51,7 @@ public static class SnapshotCollector
         snapshot.Network = Safe(NetworkCollector.Collect, new Network.NetworkInfo());
         snapshot.ProblemDevices = Safe(SystemCollector.CollectProblemDevices, []);
         snapshot.Devices = Safe(DeviceCollector.Collect, []);
+        snapshot.Drivers = Safe(DriverCollector.Collect, []);
         snapshot.DeviceLogs = Safe(DeviceLogCollector.Collect, new Devices.DeviceLogInfo());
         snapshot.PastEvents = Safe(() => PastCollector.Events(Performance.GameAdvisor.PastDays), new PastEvents());
         snapshot.Gaming.KnownGames = Safe(PastCollector.KnownGames, []);

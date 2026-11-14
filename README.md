@@ -14,8 +14,7 @@
   <a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/aliinal0/CHC?label=download&color=2ea44f" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white" alt="Windows 10 and 11">
   <img src="https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white" alt=".NET 10">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-6e40c9" alt="PolyForm Noncommercial license"></a>
-  <a href="#how-chc-is-made"><img src="https://img.shields.io/badge/built%20with-Claude-c15f3c" alt="Built with Claude"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MPL%202.0-6e40c9" alt="Mozilla Public License 2.0"></a>
 </p>
 
 <p align="center">
@@ -25,11 +24,11 @@
   <a href="#is-it-safe">Is it safe?</a> ·
   <a href="#download-and-install">Download</a> ·
   <a href="#faq">FAQ</a> ·
-  <a href="#how-chc-is-made">How it's made</a>
+  <a href="#developers">Developers</a>
 </p>
 
 <p align="center">
-  <img src="docs/readme/overview.png" width="900" alt="The CHC overview page: a health score of 52, the system summary, the temperatures of the last 7 days, recent changes and what heats the PC">
+  <img src="docs/readme/overview.png" width="900" alt="The CHC overview page: a health score of 54 with the everyday speed, the system summary, the temperatures of the last 7 days, recent changes and what heats the PC">
 </p>
 <p align="center"><sub>All screenshots on this page come from CHC's built-in <b>demo mode</b>, which shows a made-up sample PC with made-up problems, not anyone's real computer.</sub></p>
 
@@ -49,6 +48,7 @@ It is made for ordinary users who want a straight answer, and it still shows eve
 |---|---|
 | 🩺 **One clear score** | A 0–100 health score for the whole PC and for each part, with *OK / Tip / Update / Warning / Critical* labels. |
 | 💡 **Explanations, not just numbers** | Every finding says what it means and what to do next. Many open up into step-by-step help. |
+| 🐢 **Why is it slow?** | Says how fast the PC is for everyday use and what holds it back: Windows on a hard disk, too little memory, a slow processor. |
 | 🧊 **Answers for freezes and crashes** | The likely cause of each one, from the clues Windows logged just before it. |
 | ⬇️ **What to update** | Newer drivers, Windows updates and programs, looked up once a day, each with a link to where to get it. They have their own list, with drivers and Windows first. |
 | 🕰️ **A memory for your PC** | While it runs, CHC notes temperatures, load, power and what changed, so it can show when a problem began. |
@@ -65,15 +65,15 @@ It is made for ordinary users who want a straight answer, and it still shows eve
 
 | Part | What CHC looks at | Examples of what it can tell you |
 |---|---|---|
-| **Processor** | Load, temperature, clock speed, power, cores and threads, SMT, virtualization | "The processor is overheating", "Simultaneous multithreading (SMT) is off" |
-| **Memory** | Usage, every module per slot, channels, XMP/EXPO, driver memory, which programs use the most | "Memory runs below its rated speed: turn on XMP/EXPO", "The modules seem to share one channel", "Drivers are using 3.3 GB of memory" |
-| **Storage** | Windows' own disk health, full SMART data (the same engine as CrystalDiskInfo), temperature, TRIM, free space, disk timeouts | "8 reallocated sectors: back up your data", "The SSD reports it is overheating", "TRIM is off", "Drive D: is almost full" |
+| **Processor** | Load, temperature, clock speed, power, cores and threads, how fast one core really is (a short timed calculation), SMT, virtualization | "The processor is overheating", "The processor is slow: about 36% of a current mid-range one", "The processor has only 2 threads" |
+| **Memory** | How much there is and how full it is, every module per slot, channels, XMP/EXPO, driver memory, which programs use the most | "Too little memory for today (4 GB)", "Programs need more memory than this PC has", "Memory runs below its rated speed: turn on XMP/EXPO" |
+| **Storage** | Windows' own disk health, full SMART data (the same engine as CrystalDiskInfo), whether Windows sits on a hard disk, temperature, TRIM, free space, disk timeouts | "8 reallocated sectors: back up your data", "Windows is installed on a hard disk", "TRIM is off", "Drive D: is almost full" |
 | **Graphics** | Temperatures, load, power, video memory, driver, PCI Express link, Resizable BAR, which output the monitor uses | "The card runs at PCIe x4 instead of x16", "The monitor is plugged into the motherboard, not the graphics card", "Driver timeouts in the last 30 days" |
 | **Battery** (laptops) | Capacity and wear, how fast it wore over the last year, charge cycles, charging and draining power | "The battery is wearing out quickly", "The battery is draining while plugged in" |
 | **Motherboard & system** | BIOS/UEFI age, Secure Boot, TPM, Windows version and its support date, pending restarts, failed updates, uptime | "This Windows version no longer gets security updates", "An update failed to install 3 times" |
 | **Stability** | Freezes, blue screens, sudden and overheating shutdowns, sleep/wake failures, hardware (WHEA) errors, program crashes, network adapter resets | "Most problems point to the graphics card or its driver", "The problems started after a change: NVIDIA driver 32.0.15.8157" |
 | **Devices** | What is connected by cable or wirelessly, Device Manager problems, devices that keep dropping out, USB speed, the battery of wireless devices that report it, the Wi-Fi signal | "Logitech G502 X keeps dropping out (11 times in 7 days)", "Samsung PSSD T7 runs at USB 2 speed", "Wi-Fi lost its connection 7 times in 7 days" |
-| **Updates** *(once a day)* | The newest NVIDIA and AMD graphics drivers, AMD's chipset drivers, what Windows Update offers, and programs with a newer version | "NVIDIA GeForce RTX 4070 SUPER: a newer driver is available (582.16)", "A newer AMD chipset driver is available (8.09.28.1124)" |
+| **Updates** *(once a day)* | The newest NVIDIA, AMD and Intel graphics drivers, Intel's Wi-Fi and Bluetooth drivers, AMD's chipset drivers, what Windows Update offers (also under "Optional updates"), and programs with a newer version | "NVIDIA GeForce RTX 4070 SUPER: a newer driver is available (582.16)", "A newer AMD chipset driver is available (8.09.28.1124)" |
 | **Network** *(test you start)* | Ping, jitter, packet loss and lag spikes to your router and the internet, DNS, Wi-Fi signal, link speed, programs using the connection | "Ping rises when the connection is busy (bufferbloat)", "Packets are lost between the PC and the router" |
 | **Game performance** *(while you play)* | FPS, 1% and 0.1% lows, stutters, what limits the FPS, temperatures and throttling, VRAM, background programs, the game's ping, its graphics settings, power use | "One processor core limits the FPS", "For more FPS lower these first: Shadows (Epic), Effects (High)", "Cyberpunk 2077 got slower after a change: 76 → 61 FPS" |
 | **History and changes** *(over time)* | Temperatures, load, power and traffic over days and months, next to drivers, updates, programs, BIOS and hardware as they changed | "Hottest: Processor 81 °C on Monday, during Cyberpunk 2077", "2 freezes or crashes in the ten days after this" |
@@ -122,7 +122,17 @@ Every finding has one of five levels:
 | 🟠 **Warning** | Something needs your attention. | Lowers the score |
 | 🔴 **Critical** | Act soon, for example back up a failing disk. | Lowers the score a lot |
 
-A part with no warnings scores 100. Warnings take it down to between 85 and 45; only a critical problem takes it to 40 or below, so a few small issues never look worse than one serious one. The overall score works the same way across all parts: warnings alone keep it at 50 or above, and only a critical problem takes it lower. It is shown with a rating:
+Every finding takes its own weight off the score, because not every warning matters as much: Windows sitting on a hard disk costs 18 points, a single shutdown without warning costs 4. A usual warning costs 8, a critical problem 30.
+
+- **A part** with no warnings scores 100. Warnings take it down to between 85 and 45, and only a critical problem takes it to 40 or below.
+- **The whole PC** scores 90 or more only without warnings. Warnings alone never take it below 50, so many small issues can't look worse than one serious problem.
+- **Below 50** takes a critical problem, or a PC that is **very slow**: one held back by its disk, its memory and its processor at once is in a poor state, even though nothing in it is broken.
+
+Next to the score, CHC says how fast the PC is for everyday use: *Fine*, *A little slow*, *Slow* or *Very slow*, from the findings that slow it down.
+
+**What doesn't count.** A program that crashes in its own code is that program's fault, so it is shown but costs nothing. And where only you can know the cause, there is a box to tick: CHC can't tell a power cut from a failing power supply, so "These were power cuts" takes those shutdowns out of the score. What happens after the tick counts again.
+
+The overall score is shown with a rating:
 
 <table>
   <tr>
@@ -135,7 +145,7 @@ A part with no warnings scores 100. Warnings take it down to between 85 and 45; 
     <td align="center"><sub>No warnings</sub></td>
     <td align="center"><sub>A few things to look at</sub></td>
     <td align="center"><sub>Needs some attention</sub></td>
-    <td align="center"><sub>A serious problem was found</sub></td>
+    <td align="center"><sub>A serious problem, or a very slow PC</sub></td>
   </tr>
 </table>
 
@@ -172,9 +182,9 @@ The overview lists every issue found on the PC, most serious first. Each one exp
 
 Once a day CHC looks for what can be updated and lists it apart from the tips, with its own icon and a button to where you get it. CHC doesn't download or install anything itself.
 
-- **Drivers and Windows come first:** a newer NVIDIA or AMD graphics driver, a newer AMD chipset driver, what Windows Update offers, a restart Windows is waiting for, an update that keeps failing, a Windows version that no longer gets security updates.
+- **Drivers and Windows come first:** a newer NVIDIA, AMD or Intel graphics driver, a newer Intel Wi-Fi or Bluetooth driver, a newer AMD chipset driver, what Windows Update offers, a restart Windows is waiting for, an update that keeps failing, a Windows version that no longer gets security updates.
 - **Programs come after that, as suggestions:** software other programs run on, such as .NET, and then your other programs. They don't count in the score.
-- **What can't be looked up gets a link instead.** Intel graphics, your BIOS and the other motherboard drivers are on sites CHC can't read by itself, so it shows what you have and opens the maker's page.
+- **What can't be looked up gets a link instead.** Your BIOS and the drivers only your motherboard or laptop maker publishes are on sites CHC can't read by itself, so it opens the maker's page. The Motherboard & System page lists every driver that didn't come with Windows, with its version and date, so you can compare.
 
 <table>
   <tr>
@@ -189,7 +199,7 @@ Once a day CHC looks for what can be updated and lists it apart from the tips, w
 
 ### Why did my PC freeze or crash?
 
-CHC reads how each shutdown happened (a blue screen, a freeze that needed the power button, a sudden power loss, a failed wake-up, overheating) and what Windows logged in the minutes before it: graphics driver resets, hardware errors, disk timeouts, program crashes. From those clues it names the most likely cause of each incident and of most of them together, and suggests what to try first. If CHC's history covers that moment, it also says what was running and how hot and busy the PC was.
+CHC reads how each shutdown happened (a blue screen, a freeze that needed the power button, a sudden power loss, a failed wake-up, overheating) and what Windows logged in the minutes before it: graphics driver resets, hardware errors, disk timeouts, program crashes. From those clues it names the most likely cause of each incident and of most of them together, and suggests what to try first. A power cut looks the same to Windows as a power supply that fails, so you can tick those shutdowns as not the PC's doing, and they stop counting. If CHC's history covers that moment, it also says what was running and how hot and busy the PC was.
 
 <p align="center">
   <img src="docs/readme/stability.png" width="900" alt="The stability page: most problems point to the graphics card or its driver, the problems started after a driver change, and most came while one game was in front">
@@ -331,14 +341,13 @@ CHC is built to be trusted with a look inside your computer.
 
 - **It doesn't change your PC.** CHC never changes settings, never overclocks, never "cleans" or "optimizes" anything, never downloads or installs updates and never touches your own files. It only writes its own files (see below) and the reports you choose to save. Game settings files are only read.
 - **It goes online for very little, and you can see what.**
-  - *Looking for updates, once a day:* CHC asks NVIDIA's or AMD's website for the newest driver of your graphics card or chipset, and lets Windows Update and winget do their own checks. Those sites see the model and what any visit shows, such as your IP address. You can turn this off in the first-run guide or in Settings; then it only looks when you press **Check now**.
+  - *Looking for updates, once a day:* CHC asks NVIDIA's or AMD's website for the newest driver of your graphics card or chipset, downloads Intel's public list of its current drivers, and lets Windows Update and winget do their own checks. NVIDIA and AMD see the model; Intel's list is downloaded whole, so Intel learns nothing about your PC. All of them see what any visit shows, such as your IP address. You can turn this off in the first-run guide or in Settings; then it only looks when you press **Check now**.
   - *The network test, and a game you measure that turns out to be online:* they ping your router, `1.1.1.1` (Cloudflare), `8.8.8.8` (Google) and the game's server, and time a name lookup of `www.microsoft.com`.
   - Nothing else about you or your PC is sent anywhere: no telemetry, no analytics, no account, no ads.
 - **It doesn't touch your games.** FPS and network traffic come from Windows' own event tracing (ETW), the method Microsoft's PresentMon uses. Nothing is injected into the game or changed in its files.
 - **It never reads what you type or click.** There are no keyboard or mouse hooks in CHC. To tell when you are away, it only asks Windows how long ago the last input was.
 - **Your data stays with you.** Apart from the model names above, nothing leaves your PC unless you save a report and share it yourself. Reports hide serial numbers by default and leave out your computer's name, your Windows user name and file paths.
-- **The code is public.** Every check, every threshold and every text is in this repository. You can read exactly what CHC does, or build it yourself (see [For developers](#for-developers)).
-- **It says how it was made.** CHC is built with an AI, and [this page says so](#how-chc-is-made).
+- **It is open source.** Every check, every threshold and every text is in this repository, under the Mozilla Public License 2.0. You can read exactly what CHC does, change it, or build it yourself (see [For developers](#for-developers)).
 - **It stands on well-known projects.** Hardware sensors come from [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor), disk data from [DiskInfoToolkit](https://github.com/Blacktempel/DiskInfoToolkit) and event tracing from Microsoft's [TraceEvent](https://github.com/microsoft/perfview). The full list is in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 - **Administrator rights are optional.** CHC works without them and asks only when you want more data (see below). It never elevates itself silently: Windows asks you first. If you choose to start CHC with Windows, Windows asks once, and the sign-in task then starts CHC with those rights.
 - **The installer downloads only what is missing, from the source.** The .NET runtime and WebView2 come from Microsoft. The optional PawnIO driver is pinned to one release and checked against its SHA-256 checksum before it runs, so a changed file is never installed. CHC uninstalls like any other app, from Windows Settings.
@@ -378,7 +387,7 @@ CHC is new and not code-signed yet (a signing certificate costs money every year
 Each release lists the SHA-256 checksums of its files. To compare, open PowerShell in your download folder and run:
 
 ```powershell
-Get-FileHash .\CHC-Setup-1.0.0.exe -Algorithm SHA256
+Get-FileHash .\CHC-Setup-1.0.1.exe -Algorithm SHA256
 ```
 
 The value must match the one on the [Releases](../../releases) page exactly.
@@ -387,7 +396,7 @@ The value must match the one on the [Releases](../../releases) page exactly.
 
 ## Download and install
 
-1. Download **`CHC-Setup-1.0.0.exe`** from the [latest release](../../releases/latest).
+1. Download **`CHC-Setup-1.0.1.exe`** from the [latest release](../../releases/latest).
 2. Run it. The setup installs CHC and downloads the .NET 10 Desktop Runtime and WebView2 only if they are missing.
 3. Choose your options. It offers a desktop shortcut, always starting CHC as administrator, starting CHC next to the clock at sign-in so the history has no gaps, and the PawnIO driver. They are ticked by default, and you can untick any of them.
 
@@ -442,7 +451,19 @@ No. It finds them and opens the page where you get them, or Windows Update. Inst
 <details>
 <summary><b>Which updates can CHC find by itself?</b></summary>
 
-Graphics drivers for NVIDIA GeForce cards and desktop AMD Radeon RX 5000 cards and newer, AMD's chipset drivers on desktop PCs, whatever Windows Update offers, and programs known to winget, Windows' own package manager. Intel graphics, your BIOS and the other motherboard drivers are on sites CHC can't read by itself: it shows what you have and opens the maker's page. If a driver isn't listed, it can still be newer on the maker's site.
+Graphics drivers for NVIDIA GeForce cards, desktop AMD Radeon RX 5000 cards and newer, and Intel graphics from the 6th generation on; Intel's Wi-Fi and Bluetooth drivers; AMD's chipset drivers on desktop PCs; whatever Windows Update offers, also under "Optional updates", which is where most other makers' drivers are; and programs known to winget, Windows' own package manager. Your BIOS and the drivers only your motherboard or laptop maker publishes are on sites CHC can't read by itself: for those it opens the maker's page. If a driver isn't listed, it can still be newer on the maker's site.
+</details>
+
+<details>
+<summary><b>My PC is slow but nothing is broken. Does the score show that?</b></summary>
+
+Yes. CHC times the processor, looks at how much memory there is and how full it is, and whether Windows sits on a hard disk. What it finds lowers the score, and "Everyday speed" next to the score says how slow the PC is and why.
+</details>
+
+<details>
+<summary><b>The power went out. Why does that lower my score?</b></summary>
+
+Windows only sees that the power was gone, which is also what a failing power supply looks like. Tick "These were power cuts" on that finding and they stop counting. A new one will show up again.
 </details>
 
 <details>
@@ -496,7 +517,7 @@ CHC is English only for now, while its features settle. Translations are planned
 <details>
 <summary><b>Is it really free?</b></summary>
 
-Yes, for personal and other noncommercial use. Selling CHC or using it commercially is not allowed (see <a href="#license">License</a>).
+Yes. CHC is free and open source (see <a href="#license">License</a>).
 </details>
 
 <details>
@@ -570,20 +591,23 @@ Contributions are welcome: bug reports, hardware reports, new checks. See [CONTR
 
 ---
 
-## How CHC is made
+## Developers
 
-CHC is made by [aliinal0](https://github.com/aliinal0) with [Claude](https://claude.com/claude-code), Anthropic's AI, using Claude Code. aliinal0 decides what CHC should do and tries it on a real PC. Claude wrote most of the code and the texts, and is credited as co-author of the commits.
+- [aliinal0](https://github.com/aliinal0) decides what CHC should do and tries it on real PCs.
+- [Claude](https://claude.com/claude-code), Anthropic's AI, writes most of the code and the texts, and is co-author of the commits.
 
-The code is all here to read, so you can judge it for yourself. CHC has been tested on only a few computers so far, so if it gets something wrong on yours, [please tell us](CONTRIBUTING.md#testing-chc-on-your-pc).
+CHC has been tested on only a few computers so far. If it gets something wrong on yours, [please tell us](CONTRIBUTING.md#testing-chc-on-your-pc).
 
 ---
 
 ## License
 
-CHC is released under the **[PolyForm Noncommercial License 1.0.0](LICENSE)**.
+CHC is open source, released under the **[Mozilla Public License 2.0](LICENSE)**.
 
-- ✅ You may use, study, modify and share CHC for free for personal and other noncommercial purposes.
-- ❌ You may not sell CHC, distribute it for money or use it for commercial purposes.
+- ✅ You may use, study, change and share CHC, for any purpose.
+- 📖 If you share a changed version, the CHC files you changed stay under the same license, with their source available.
+
+Version 1.0.0 was released under the PolyForm Noncommercial License; from 1.0.1 on, CHC is MPL 2.0.
 
 Third-party components keep their own licenses; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 

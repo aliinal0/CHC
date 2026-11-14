@@ -39,6 +39,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public MainViewModel(AppSettings settings, bool demo = false, bool laptop = false)
     {
         _settings = settings;
+        FindingViewModel.ExcuseChanged = OnExcuseChanged;
         _demo = demo ? new DemoData { Laptop = laptop } : null;
         IsDemo = demo;
         IsElevated = demo || SnapshotCollector.IsElevated;
@@ -287,8 +288,20 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         return Core.Power.PowerSupplyMath.Build(snapshot.Sensors, watts, rating, model, _history);
     }
 
-    /// <summary>The user described their power supply: its findings change, so does the score.</summary>
-    /// <summary>A device test finished: what it found belongs on every page and in the report.</summary>
+    /// <summary>
+    /// The user ticked "this wasn't the PC" on a finding, or took the tick away. What happened up to now is excused;
+    /// the findings and the score follow at once.
+    /// </summary>
+    private void OnExcuseChanged(string key, bool excused)
+    {
+        if (excused) _settings.ExcusedFindings[key] = DateTime.Now;
+        else _settings.ExcusedFindings.Remove(key);
+        SettingsService.Save(_settings);
+        // Once the click is over: the pages are built anew, and the box that was clicked goes with them.
+        System.Windows.Application.Current.Dispatcher.BeginInvoke(ReanalyzeDevices);
+    }
+
+    /// <summary>Something the findings depend on changed: they belong on every page and in the report.</summary>
     public void ReanalyzeDevices()
     {
         if (Snapshot is not { } snapshot) return;
@@ -428,6 +441,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                     snapshot.Updates = _updates;
                 }
             }
+            snapshot.Excused = _settings.ExcusedFindings;
             Health = HealthAnalyzer.Analyze(snapshot);
             TrackChanges(snapshot);
             if (_recorder is not null)

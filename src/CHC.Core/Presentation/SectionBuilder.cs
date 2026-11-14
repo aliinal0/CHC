@@ -81,6 +81,7 @@ public static class SectionBuilder
             Row("spec.cores", cpu.Cores > 0 ? cpu.Cores.ToString() : ""),
             Row("spec.threads", cpu.Threads > 0 ? cpu.Threads.ToString() : ""),
             Row("spec.baseclock", cpu.BaseClockMHz > 0 ? Fmt.MHz(cpu.BaseClockMHz) : ""),
+            Row("spec.cpuspeed", s.Speed.CpuSpeedPercent is { } speed ? Loc.T("spec.cpuspeed.value", speed) : ""),
             Row("spec.socket", cpu.Socket)));
         d.Specs.Add(Group("spec.group.cache",
             Row("spec.l2", cpu.L2CacheKB > 0 ? Fmt.Bytes((ulong)cpu.L2CacheKB * 1024, 0) : ""),
@@ -379,6 +380,23 @@ public static class SectionBuilder
         board.Highlights.Add(new(Loc.T("label.secureboot"), Fmt.OnOff(b.SecureBoot)));
         board.Highlights.Add(new(Loc.T("label.tpm"), b.TpmPresent is null ? Fmt.Dash : b.TpmPresent == true ? Fmt.Or(b.TpmVersion) : Loc.T("common.off")));
         board.Highlights.Add(new(Loc.T("label.formfactor"), Loc.T(b.IsLaptop ? "board.laptop" : "board.desktop")));
+
+        // The drivers that didn't come with Windows: these are the ones a maker updates.
+        string[] hidden = ["SOFTWARECOMPONENT", "EXTENSION", "SOFTWAREDEVICE", "PRINTQUEUE"];
+        var drivers = s.Drivers.Where(d => d.Provider.Length > 0 && !d.Provider.Equals("Microsoft", StringComparison.OrdinalIgnoreCase) && !hidden.Contains(d.Class)).ToList();
+        if (drivers.Count > 0)
+        {
+            board.Tables.Add(new TableBlock(Loc.T("drivers.table"),
+                [Loc.T("col.device"), Loc.T("col.type"), Loc.T("col.manufacturer"), Loc.T("col.version"), Loc.T("col.date")],
+                drivers.Select(d => (IReadOnlyList<string>)
+                [
+                    d.Device,
+                    Loc.T(Loc.Instance.Has("drivers.class." + d.Class.ToLowerInvariant()) ? "drivers.class." + d.Class.ToLowerInvariant() : "drivers.class.other"),
+                    d.Provider,
+                    d.Version,
+                    d.Date is { } date ? Fmt.Date(date) : Fmt.Dash,
+                ]).ToList()));
+        }
 
         board.Specs.Add(Group("spec.group.motherboard",
             Row("spec.manufacturer", b.Manufacturer),

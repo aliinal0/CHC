@@ -117,6 +117,16 @@ public sealed partial class DashboardViewModel(MainViewModel main) : ObservableO
     [ObservableProperty]
     private string _headline = "";
 
+    /// <summary>How fast the PC is for everyday use, and in the tooltip what slows it down.</summary>
+    [ObservableProperty]
+    private string _speedText = "";
+
+    [ObservableProperty]
+    private Severity _speedSeverity;
+
+    [ObservableProperty]
+    private string _speedTip = "";
+
     [ObservableProperty]
     private string _lastScanText = "";
 
@@ -227,6 +237,11 @@ public sealed partial class DashboardViewModel(MainViewModel main) : ObservableO
         Severity = health.RatingSeverity;
         RatingText = Loc.T(health.RatingKey);
         Headline = Loc.T(health.RatingKey + ".headline");
+        SpeedText = Loc.T(health.SpeedKey);
+        SpeedSeverity = health.SpeedSeverity;
+        SpeedTip = health.Slowing.Count == 0
+            ? Loc.T("speed.tip.fine")
+            : Loc.T("speed.tip") + Environment.NewLine + string.Join(Environment.NewLine, health.Slowing.Select(f => "• " + f.Title));
         LastScanText = Loc.T("dashboard.lastscan", Fmt.DateAndTime(snapshot.TakenAt));
         CriticalCount = health.CriticalCount;
         WarningCount = health.WarningCount;

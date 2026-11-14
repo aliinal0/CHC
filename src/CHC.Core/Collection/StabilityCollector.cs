@@ -122,12 +122,28 @@ internal static partial class StabilityCollector
         return info;
     }
 
+    private static string? FolderOf(string path)
+    {
+        var at = path.LastIndexOf('\\');
+        return at > 0 ? path[..(at + 1)] : null;
+    }
+
     private static void ReadApplicationLog(StabilityInfo info, List<EventEntry> recent, TimeSpan period)
     {
         foreach (var r in Read("Application", "Provider[@Name='Application Error'] and EventID=1000", period))
         {
             var d = Data(r);
-            info.AppEvents.Add(new AppEvent { Time = Time(r), App = d.GetValueOrDefault("AppName", d.GetValueOrDefault("#0", "")), Module = d.GetValueOrDefault("ModuleName", d.GetValueOrDefault("#3", "")) });
+            var appPath = d.GetValueOrDefault("AppPath", d.GetValueOrDefault("#10", ""));
+            var modulePath = d.GetValueOrDefault("ModulePath", d.GetValueOrDefault("#11", ""));
+            info.AppEvents.Add(new AppEvent
+            {
+                Time = Time(r),
+                App = d.GetValueOrDefault("AppName", d.GetValueOrDefault("#0", "")),
+                Module = d.GetValueOrDefault("ModuleName", d.GetValueOrDefault("#3", "")),
+                ExceptionCode = d.GetValueOrDefault("ExceptionCode", d.GetValueOrDefault("#6", "")),
+                // Only whether the module belongs to the program is kept, never the paths themselves.
+                ModuleIsOwn = FolderOf(appPath) is { Length: > 3 } folder && modulePath.StartsWith(folder, StringComparison.OrdinalIgnoreCase),
+            });
         }
         foreach (var r in Read("Application", "Provider[@Name='Application Hang'] and EventID=1002", period))
         {
@@ -146,6 +162,7 @@ internal static partial class StabilityCollector
                 Last = g.Max(a => a.Time),
                 Module = g.Where(a => !a.IsHang && a.Module.Length > 0).GroupBy(a => a.Module, StringComparer.OrdinalIgnoreCase)
                     .OrderByDescending(m => m.Count()).Select(m => m.Key).FirstOrDefault() ?? "",
+                Cause = Diagnostics.CrashJudge.Judge(g),
             })
             .OrderByDescending(a => a.Crashes + a.Hangs)
             .ThenByDescending(a => a.Last)

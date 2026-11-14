@@ -3,7 +3,7 @@
 Thanks for helping! Bug reports, hardware reports, new health checks and UI improvements are all welcome.
 
 By contributing you agree that your contribution is released under the project's
-[PolyForm Noncommercial License 1.0.0](LICENSE).
+[Mozilla Public License 2.0](LICENSE).
 
 ## Testing CHC on your PC
 

@@ -42,6 +42,33 @@ public sealed class Finding(ComponentKind component, Severity severity, string k
     /// <summary>False for a summary of problems that already have their own findings, so they are not counted twice in the score.</summary>
     public bool Scored { get; init; } = true;
 
+    /// <summary>Points this takes off the overall score. Null: what its severity usually costs.</summary>
+    public double? Weight { get; init; }
+
+    /// <summary>What it costs: nothing when it doesn't count, else its own weight or its severity's usual one.</summary>
+    public double Penalty => !Scored ? 0 : Weight ?? Severity switch
+    {
+        Severity.Warning => HealthReport.WarningPoints,
+        Severity.Critical => HealthReport.CriticalPoints,
+        _ => 0,
+    };
+
+    /// <summary>Makes the PC slow in everyday use. These add up to the speed verdict.</summary>
+    public bool Slows { get; init; }
+
+    /// <summary>
+    /// Set when the user may say this wasn't the PC's doing: a power cut, a program they were testing
+    /// ("silent", "appcrash:name"...). Null when that isn't an option.
+    /// </summary>
+    public string? ExcuseKey { get; init; }
+
+    /// <summary>The user said so: it is still shown, but doesn't count.</summary>
+    public bool Excused { get; init; }
+
+    private string ExcuseKind => ExcuseKey?.Split(':')[0] ?? "";
+    public string ExcuseLabel => ExcuseKey is null ? "" : Loc.T("excuse." + ExcuseKind + ".label");
+    public string ExcuseHint => ExcuseKey is null ? "" : Loc.T("excuse." + ExcuseKind + ".hint");
+
     public string Title => Loc.T(Key + ".title", Args);
     public string Detail => Loc.Instance.Has(Key + ".detail") ? Loc.T(Key + ".detail", Args) : "";
     public string Recommendation => Loc.Instance.Has(Key + ".fix") ? Loc.T(Key + ".fix", Args) : "";
@@ -66,17 +93,18 @@ public sealed class ComponentHealth(ComponentKind kind, IReadOnlyList<Finding> f
 
     /// <summary>
     /// 100 without warnings. Warnings only: 85 down to 45. Any critical problem: 40 down to 0, so a part with
-    /// many small warnings never scores below a part with one serious problem.
+    /// many small warnings never scores below a part with one serious problem. A part shows its problems larger
+    /// than the whole PC does: a usual warning's 8 points are 15 here, a critical problem's 30 are 40.
     /// </summary>
     public int Score
     {
         get
         {
-            var warnings = Findings.Count(f => f.Scored && f.Severity == Severity.Warning);
-            var criticals = Findings.Count(f => f.Scored && f.Severity == Severity.Critical);
-            var score = 100 - warnings * 15 - criticals * 40;
-            if (criticals > 0) return Math.Clamp(score, 0, 40);
-            if (warnings > 0) return Math.Clamp(score, 45, 85);
+            var scored = Findings.Where(f => f.Scored && f.Severity >= Severity.Warning).ToList();
+            var criticals = scored.Any(f => f.Severity == Severity.Critical);
+            var score = (int)Math.Round(100 - scored.Sum(f => f.Penalty * (f.Severity == Severity.Critical ? 40.0 / HealthReport.CriticalPoints : 15.0 / HealthReport.WarningPoints)));
+            if (criticals) return Math.Clamp(score, 0, 40);
+            if (scored.Count > 0) return Math.Clamp(score, 45, 85);
             return 100;
         }
     }
@@ -106,22 +134,50 @@ public sealed class HealthReport(IReadOnlyList<ComponentHealth> components)
 
     public Severity Severity => Components.Count == 0 ? Severity.Good : Components.Max(c => c.Severity);
 
+    /// <summary>What a warning and a critical problem take off the score, unless the finding says otherwise.</summary>
+    public const double WarningPoints = 8;
+    public const double CriticalPoints = 30;
+
     /// <summary>
-    /// 90+ (excellent) only without warnings; warnings alone end at 50 (fair) at worst; below 50 (poor,
-    /// "serious problems") needs a critical problem. Summaries of other findings are not counted again.
+    /// Every finding takes its own weight off 100: a hard disk under Windows costs more than a program that hung.
+    /// 90+ (excellent) only without warnings. Warnings alone end at 50 (fair) at worst, so many small ones never look
+    /// worse than one serious problem. Below 50 (poor) takes a critical problem, or a PC that is very slow: held back
+    /// by its disk, its memory and its processor at once it is in a poor state, even though nothing in it is broken.
+    /// Summaries of other findings and what the user excused aren't counted.
     /// </summary>
     public int Score
     {
         get
         {
-            var warnings = AllFindings.Count(f => f.Scored && f.Severity == Severity.Warning);
-            var criticals = AllFindings.Count(f => f.Scored && f.Severity == Severity.Critical);
-            var score = 100 - warnings * 8 - criticals * 30;
-            if (criticals > 0) return Math.Clamp(score, 0, 49);
-            if (warnings > 0) return Math.Clamp(score, 50, 89);
+            var scored = AllFindings.Where(f => f.Scored && f.Severity >= Severity.Warning).ToList();
+            var score = (int)Math.Round(100 - scored.Sum(f => f.Penalty));
+            if (scored.Any(f => f.Severity == Severity.Critical)) return Math.Clamp(score, 0, 49);
+            if (SpeedKey == "speed.veryslow") return Math.Clamp(score, 30, 49);
+            if (scored.Count > 0) return Math.Clamp(score, 50, 89);
             return 100;
         }
     }
+
+    /// <summary>What makes this PC slow in everyday use, the heaviest first.</summary>
+    public IReadOnlyList<Finding> Slowing =>
+        AllFindings.Where(f => f.Slows && f.Scored && f.Severity >= Severity.Warning).OrderByDescending(f => f.Penalty).ToList();
+
+    /// <summary>How fast the PC is for everyday use, from what slows it down: "fine", "littleslow", "slow" or "veryslow".</summary>
+    public string SpeedKey => "speed." + (Slowing.Sum(f => f.Penalty) switch
+    {
+        >= 40 => "veryslow",
+        >= 20 => "slow",
+        >= 6 => "littleslow",
+        _ => "fine",
+    });
+
+    public Severity SpeedSeverity => SpeedKey switch
+    {
+        "speed.veryslow" => Severity.Critical,
+        "speed.slow" => Severity.Warning,
+        "speed.littleslow" => Severity.Info,
+        _ => Severity.Good,
+    };
 
     public string RatingKey => Score switch
     {

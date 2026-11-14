@@ -79,6 +79,23 @@
                             Text="{Binding Headline}"
                             TextAlignment="Center"
                             TextWrapping="Wrap" />
+                        <StackPanel
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Background="Transparent"
+                            Orientation="Horizontal"
+                            ToolTip="{Binding SpeedTip}">
+                            <TextBlock
+                                FontSize="13"
+                                Foreground="{DynamicResource TextSecondaryBrush}"
+                                Text="{loc:Tr speed.label}" />
+                            <TextBlock
+                                Margin="5,0,0,0"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{Binding SpeedSeverity, Converter={StaticResource SeverityBrush}}"
+                                Text="{Binding SpeedText}" />
+                        </StackPanel>
                         <UniformGrid
                             Margin="0,16,0,0"
                             Columns="4">

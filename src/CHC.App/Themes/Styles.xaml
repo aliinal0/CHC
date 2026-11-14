@@ -364,6 +364,18 @@
                             Visibility="{Binding Why, Converter={StaticResource VisibleWhen}}" />
                     </StackPanel>
                 </Border>
+
+                <!--  "This wasn't the PC": a power cut or a program being tested shouldn't cost the PC its score  -->
+                <StackPanel Margin="20,10,0,0" Visibility="{Binding CanExcuse, Converter={StaticResource VisibleWhen}}">
+                    <CheckBox
+                        AutomationProperties.AutomationId="ExcuseBox"
+                        Content="{Binding ExcuseLabel}"
+                        IsChecked="{Binding IsExcused, Mode=TwoWay}" />
+                    <TextBlock
+                        Margin="0,2,0,0"
+                        Style="{StaticResource Caption}"
+                        Text="{Binding ExcuseHint}" />
+                </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" VerticalAlignment="Top" Orientation="Horizontal">
                 <Border

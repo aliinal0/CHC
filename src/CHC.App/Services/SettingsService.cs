@@ -15,6 +15,12 @@ public sealed class AppSettings
     /// <summary>Once a day, look for newer drivers, Windows updates and programs. The only thing CHC goes online for by itself.</summary>
     public bool CheckUpdatesAutomatically { get; set; } = true;
 
+    /// <summary>
+    /// What the user said wasn't the PC's doing (a power cut, a program they were testing), and when they said it.
+    /// Only what happened up to then is excused.
+    /// </summary>
+    public Dictionary<string, DateTime> ExcusedFindings { get; set; } = [];
+
     /// <summary>When Windows' usage records were last read.</summary>
     public DateTime? RecordsReadAt { get; set; }
 

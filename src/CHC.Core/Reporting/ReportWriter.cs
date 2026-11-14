@@ -61,6 +61,9 @@ public static class ReportWriter
         sb.Append("<div class=\"verdict\"><span class=\"n\">").Append(health.Score).Append("</span><span class=\"of\">/ 100</span><span class=\"rating ")
           .Append(Css(health.RatingSeverity)).Append("\">").Append(E(Loc.T(health.RatingKey))).Append("</span></div>");
         sb.Append("<p class=\"lead\">").Append(E(Verdict(health))).Append("</p>");
+        sb.Append("<p>").Append(E(Loc.T("speed.label"))).Append(" <b class=\"sev ").Append(Css(health.SpeedSeverity)).Append("\">").Append(E(Loc.T(health.SpeedKey))).Append("</b>");
+        if (health.Slowing.Count > 0) sb.Append(E(" · " + string.Join("; ", health.Slowing.Take(3).Select(f => f.Title))));
+        sb.Append("</p>");
         if (!s.IsElevated) sb.Append("<p class=\"soft\">").Append(E(Loc.T("report.notelevated"))).Append("</p>");
 
         var first = health.Noteworthy.Where(f => f.Severity >= Severity.Warning).Take(FirstThings).ToList();
@@ -141,6 +144,7 @@ public static class ReportWriter
         sb.Append("<div class=\"item\"><p class=\"head\">").Append(f.IsUpdate ? Badge(f.Severity, Severity.Update) : Status(f.Severity)).Append(" <b>").Append(E(f.Title)).Append("</b>");
         if (withPart) sb.Append(" <span class=\"soft\">· ").Append(E(Loc.T(SectionBuilder.TitleKey(f.Component)))).Append("</span>");
         if (f.Key.StartsWith("game.past.", StringComparison.Ordinal)) sb.Append(" <span class=\"tag\">").Append(E(Loc.T("source.nonchc"))).Append("</span>");
+        if (f.Excused) sb.Append(" <span class=\"tag\">").Append(E(Loc.T("excuse.done"))).Append("</span>");
         sb.Append("</p>");
         if (f.Detail.Length > 0) sb.Append("<p class=\"soft\">").Append(E(f.Detail)).Append("</p>");
         if (f.HasRecommendation) sb.Append("<p><b>").Append(E(Loc.T("report.todo"))).Append("</b> ").Append(E(f.Recommendation)).Append("</p>");
@@ -367,6 +371,7 @@ public static class ReportWriter
         sb.AppendLine(Fmt.DateAndTime(s.TakenAt));
         sb.AppendLine();
         sb.AppendLine($"{Loc.T("report.score")}: {health.Score}/100 ({Loc.T(health.RatingKey)})");
+        sb.AppendLine($"{Loc.T("speed.label")} {Loc.T(health.SpeedKey)}");
         foreach (var (k, v) in SystemSummary(s)) sb.AppendLine($"{k}: {v}");
         sb.AppendLine();
         foreach (var c in health.Components)
@@ -407,6 +412,7 @@ public static class ReportWriter
             {
                 ["score"] = health.Score,
                 ["rating"] = Loc.T(health.RatingKey),
+                ["speed"] = health.SpeedKey["speed.".Length..],
                 ["components"] = new JsonArray(health.Components.Select(c => (JsonNode)new JsonObject
                 {
                     ["component"] = c.Kind.ToString(),
@@ -416,6 +422,9 @@ public static class ReportWriter
                     {
                         ["severity"] = f.Severity.ToString(),
                         ["isUpdate"] = f.IsUpdate,
+                        ["points"] = f.Penalty,
+                        ["slows"] = f.Slows,
+                        ["excused"] = f.Excused,
                         ["id"] = f.Key,
                         ["title"] = f.Title,
                         ["detail"] = f.Detail,
@@ -429,7 +438,7 @@ public static class ReportWriter
             ["updates"] = JsonSerializer.SerializeToNode(new
             {
                 s.Updates.CheckedAt,
-                Items = options.IncludeUsage ? s.Updates.Items : s.Updates.Items.Where(i => i.Kind < Updates.UpdateKind.Runtime).ToList(),
+                Items = options.IncludeUsage ? s.Updates.Items : s.Updates.Items.Where(i => i.Kind is not (Updates.UpdateKind.Runtime or Updates.UpdateKind.Program)).ToList(),
             }, json),
         };
         if (!options.IncludeSensors) root["snapshot"]!.AsObject().Remove("Sensors");

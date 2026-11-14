@@ -196,9 +196,21 @@ public sealed class DemoData
             },
             Changes = DemoChanges(now),
             Devices = DemoDevices(),
+            Drivers =
+            [
+                new() { Device = "NVIDIA GeForce RTX 4070 SUPER", Class = "DISPLAY", Provider = "NVIDIA", Version = "32.0.15.8157", Date = now.AddDays(-41).Date },
+                new() { Device = "Realtek High Definition Audio", Class = "MEDIA", Provider = "Realtek Semiconductor Corp.", Version = "6.0.9733.1", Date = now.AddMonths(-3).Date },
+                new() { Device = "NVIDIA High Definition Audio", Class = "MEDIA", Provider = "NVIDIA Corporation", Version = "1.4.5.4", Date = now.AddMonths(-2).Date },
+                new() { Device = "Realtek Gaming 2.5GbE Family Controller", Class = "NET", Provider = "Realtek", Version = "10.79.50.1003", Date = now.AddMonths(-5).Date },
+                new() { Device = "Intel(R) Wi-Fi 6E AX211 160MHz", Class = "NET", Provider = "Intel Corporation", Version = "23.150.0.3", Date = now.AddMonths(-9).Date },
+                new() { Device = "Intel(R) Wireless Bluetooth(R)", Class = "BLUETOOTH", Provider = "Intel Corporation", Version = "23.150.0.3", Date = now.AddMonths(-9).Date },
+                new() { Device = "AMD GPIO Controller", Class = "SYSTEM", Provider = "Advanced Micro Devices, Inc.", Version = "2.2.0.130", Date = now.AddMonths(-14).Date },
+                new() { Device = "AMD SMBus", Class = "SYSTEM", Provider = "Advanced Micro Devices, Inc.", Version = "5.12.0.38", Date = now.AddMonths(-14).Date },
+            ],
             DeviceLogs = new Devices.DeviceLogInfo { WifiDrops = 7, WifiFailures = 2 },
             PastEvents = DemoPastEvents(),
             Updates = DemoUpdates(now),
+            Speed = new SpeedInfo { CpuSpeedPercent = Laptop ? 84 : 106 },
         };
         snapshot.Stability.Incidents = IncidentBuilder.Build(snapshot.Stability);
         snapshot.Stability.UnexpectedShutdowns = snapshot.Stability.Shutdowns.Count;
@@ -543,6 +555,7 @@ public sealed class DemoData
         [
             new() { Kind = Updates.UpdateKind.GraphicsDriver, Name = "NVIDIA GeForce RTX 4070 SUPER", Installed = "581.57", Latest = "582.16", Released = now.AddDays(-5).Date, Url = Updates.MakerPages.NvidiaDrivers },
             new() { Kind = Updates.UpdateKind.ChipsetDriver, Name = "AMD Chipset Software", Installed = "7.12.04.858", Latest = "8.09.28.1124", Url = Updates.MakerPages.AmdDrivers },
+            new() { Kind = Updates.UpdateKind.DeviceDriver, Name = "Intel(R) Wi-Fi 6E AX211 160MHz", Installed = "23.150.0.3", Latest = "24.70.0.3", Released = now.AddDays(-60).Date, Url = Updates.MakerPages.IntelDrivers },
             new() { Kind = Updates.UpdateKind.WindowsDriver, Name = "Realtek - Net - 10.82.1205.2026", Url = Updates.MakerPages.OptionalUpdates },
             new() { Kind = Updates.UpdateKind.Runtime, Name = "Microsoft Windows Desktop Runtime - 8.0.29 (x64)", Installed = "8.0.29", Latest = "8.0.33" },
             new() { Kind = Updates.UpdateKind.Runtime, Name = "Microsoft Visual C++ 2015-2022 Redistributable (x64)", Installed = "14.42.34433", Latest = "14.44.35208" },

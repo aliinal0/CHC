@@ -53,7 +53,17 @@ public static partial class HealthAnalyzer
         if (SystemCollector.CpuTemperature(s.Sensors.Device(cpu.SensorHardwareId))?.Max is { } peak && peak >= 95 && list.All(f => f.Severity < Severity.Warning))
             list.Add(new(k, Severity.Warning, "cpu.temp.peak", peak));
 
-        if (cpu.Manufacturer == "AMD" && s.Stability.Incidents.Any(i => i.Cause == "silent"))
+        // How fast it is: two threads are too few for Windows and a browser, and an old processor is slow however many it has.
+        if (cpu.Threads is > 0 and <= 2)
+            list.Add(new(k, Severity.Warning, "cpu.threads.few", cpu.Threads) { Weight = 10, Slows = true });
+        if (s.Speed.CpuSpeedPercent is < VerySlowCpu and var verySlow)
+            list.Add(new(k, Severity.Warning, "cpu.slow.very", verySlow) { Weight = 14, Slows = true });
+        else if (s.Speed.CpuSpeedPercent is < SlowCpu and var slow)
+            list.Add(new(k, Severity.Warning, "cpu.slow", slow) { Weight = 8, Slows = true });
+        if (s.Power.ProcessorMaxState is < 100 and var maxState)
+            list.Add(new(k, Severity.Warning, "cpu.maxstate", maxState) { Weight = 6, Slows = true });
+
+        if (cpu.Manufacturer == "AMD" && ActiveIncidents(s).Any(i => i.Cause == "silent"))
             list.Add(new(k, Severity.Info, "cpu.ryzen.idle"));
 
         if (cpu.VirtualizationEnabled == false)
@@ -74,18 +84,28 @@ public static partial class HealthAnalyzer
         var list = new List<Finding>();
         var mem = s.Memory;
 
+        // Programs were promised more memory than there is, and the memory is mostly full: Windows is using the disk instead.
+        var swapping = mem.TotalBytes > 0 && mem.LoadPercent >= 80 && mem.CommitTotalBytes > mem.TotalBytes * 1.15;
+
         if (mem.LoadPercent >= 90)
-            list.Add(new(k, Severity.Warning, "memory.load.high", mem.LoadPercent));
-        else if (mem.LoadPercent >= 80)
+            list.Add(new(k, Severity.Warning, "memory.load.high", mem.LoadPercent) { Slows = true });
+        else if (mem.LoadPercent >= 80 && !swapping)
             list.Add(new(k, Severity.Info, "memory.load.elevated", mem.LoadPercent));
-        else
+        else if (!swapping)
             list.Add(new(k, Severity.Good, "memory.load.ok", mem.LoadPercent));
 
-        if (mem.CommitLimitBytes > 0 && mem.CommitTotalBytes >= mem.CommitLimitBytes * 0.9)
-            list.Add(new(k, Severity.Warning, "memory.commit.high", 100.0 * mem.CommitTotalBytes / mem.CommitLimitBytes));
+        if (swapping)
+            list.Add(new(k, Severity.Warning, "memory.overcommit", Fmt.Bytes(mem.CommitTotalBytes), Fmt.Bytes(mem.TotalBytes)) { Weight = mem.LoadPercent >= 90 ? 6 : 10, Slows = true });
 
-        if (mem.TotalBytes > 0 && mem.TotalBytes < 7.5 * 1024 * 1024 * 1024)
-            list.Add(new(k, Severity.Info, "memory.capacity.low", Fmt.Bytes(mem.TotalBytes, 0)));
+        if (mem.CommitLimitBytes > 0 && mem.CommitTotalBytes >= mem.CommitLimitBytes * 0.9)
+            list.Add(new(k, Severity.Warning, "memory.commit.high", 100.0 * mem.CommitTotalBytes / mem.CommitLimitBytes) { Slows = true });
+
+        // A PC sold with 4 GB shows a little less: its graphics take a share. Under 3.2 GB it was sold with 2 or 3.
+        const double gigabyte = 1024.0 * 1024 * 1024;
+        if (mem.TotalBytes > 0 && mem.TotalBytes < 3.2 * gigabyte)
+            list.Add(new(k, Severity.Critical, "memory.capacity.verylow", Fmt.Bytes(mem.TotalBytes, 0)) { Slows = true });
+        else if (mem.TotalBytes > 0 && mem.TotalBytes < 7.5 * gigabyte)
+            list.Add(new(k, Severity.Warning, "memory.capacity.low", Fmt.Bytes(mem.TotalBytes, 0)) { Weight = 12, Slows = true });
 
         var modules = mem.Modules;
         if (modules.Count == 1 && mem.SlotCount >= 2)
@@ -104,7 +124,7 @@ public static partial class HealthAnalyzer
         if (slow is not null)
             list.Add(new(k, Severity.Info, "memory.speed.below", slow.ConfiguredSpeedMTs, slow.SpeedMTs));
         // Turning XMP/EXPO on is only worth suggesting on a PC that runs stably.
-        else if (MemoryProfile(mem) is { Xmp: false, Rated: { } rated } profile && !HasInstability(s.Stability))
+        else if (MemoryProfile(mem) is { Xmp: false, Rated: { } rated } profile && !HasInstability(s))
             list.Add(new(k, Severity.Info, "memory.xmp.off", profile.Configured, rated));
 
         if (modules.Select(m => (m.CapacityBytes, m.PartNumber)).Distinct().Count() > 1)
@@ -116,11 +136,11 @@ public static partial class HealthAnalyzer
 
         if (st.MemoryTestFoundErrors == true)
             list.Add(new(k, Severity.Critical, "memory.test.errors", Fmt.Date(st.MemoryTestDate)));
-        else if (HasInstability(st) && st.MemoryTestDate is null)
+        else if (HasInstability(s) && st.MemoryTestDate is null)
             list.Add(new(k, Severity.Info, "memory.test.suggest"));
 
         // XMP/EXPO is an overclock; with crashes or freezes it is the first thing to rule out.
-        if (HasInstability(st) && MemoryProfile(mem) is { Xmp: true } running)
+        if (HasInstability(s) && MemoryProfile(mem) is { Xmp: true } running)
             list.Add(new(k, Severity.Info, "memory.xmp.stability", running.Configured));
 
         if (mem.TotalBytes > 0 && mem.CommitLimitBytes > 0 && mem.CommitLimitBytes <= mem.TotalBytes * 1.02)
@@ -197,7 +217,7 @@ public static partial class HealthAnalyzer
                 list.Add(new(k, Severity.Warning, "storage.readerrors", name, d.ReadErrorsUncorrected));
 
             if (d.IsSystemDisk && d.Media == DiskMedia.Hdd)
-                list.Add(new(k, Severity.Info, "storage.system.hdd", name));
+                list.Add(new(k, Severity.Warning, "storage.system.hdd", name) { Weight = 18, Slows = true });
             if (d.Media == DiskMedia.Hdd && d.PowerOnHours >= 40_000)
                 list.Add(new(k, Severity.Info, "storage.hdd.old", name, Fmt.Number(d.PowerOnHours)));
 
@@ -215,7 +235,7 @@ public static partial class HealthAnalyzer
             var freePercent = 100.0 * v.FreeBytes / v.TotalBytes;
             // Only a full Windows drive breaks things (updates, page file, temp files); a full data drive is a warning.
             if (freePercent < 5)
-                list.Add(new(k, v.IsSystem ? Severity.Critical : Severity.Warning, "storage.volume.full", v.Letter, freePercent, Fmt.Bytes(v.FreeBytes)));
+                list.Add(new(k, v.IsSystem ? Severity.Critical : Severity.Warning, "storage.volume.full", v.Letter, freePercent, Fmt.Bytes(v.FreeBytes)) { Slows = v.IsSystem });
             else if (freePercent < 10)
                 list.Add(new(k, Severity.Warning, "storage.volume.low", v.Letter, freePercent, Fmt.Bytes(v.FreeBytes)));
         }
@@ -269,7 +289,7 @@ public static partial class HealthAnalyzer
             var before = list.Count;
             if (g.UsesBasicDriver)
             {
-                list.Add(new(k, Severity.Warning, "gpu.nodriver", g.Name));
+                list.Add(new(k, Severity.Warning, "gpu.nodriver", g.Name) { Slows = true });
                 continue;
             }
             if (g.PcieWidth is > 0 and var width && g.PcieMaxWidth > width)
@@ -355,6 +375,8 @@ public static partial class HealthAnalyzer
         {
             if (u.Kind == UpdateKind.ChipsetDriver)
                 list.Add(new(k, Severity.Update, u.Installed.Length > 0 ? "update.chipset" : "update.chipset.missing", u.Name, u.Latest, u.Installed) { ActionUrl = u.Url });
+            else if (u.Kind == UpdateKind.DeviceDriver)
+                list.Add(new(k, Severity.Update, "update.driver", u.Name, u.Latest, u.Installed, u.Released is { } day ? Loc.T("update.released", Fmt.Date(day)) : "") { ActionUrl = u.Url });
             else if (u.Kind == UpdateKind.WindowsDriver)
                 list.Add(new(k, Severity.Update, "update.windowsdriver", u.Name) { ActionUrl = u.Url, ActionKey = "update.action.windows" });
             else if (u.Kind == UpdateKind.Windows)
@@ -375,8 +397,16 @@ public static partial class HealthAnalyzer
             list.Add(new(k, Severity.Warning, "board.windows.unsupported", Fmt.Or(os.Name), Fmt.Or(os.DisplayVersion.Length > 0 ? os.DisplayVersion : os.Build), Fmt.Date(end)) { IsUpdate = true, ActionUrl = MakerPages.WindowsUpdate, ActionKey = "update.action.windows" });
         if (os.RestartPending == true)
             list.Add(new(k, Severity.Update, "board.restart.pending") { ActionUrl = MakerPages.WindowsUpdate, ActionKey = "update.action.windows" });
-        if (os.StartupApps.Count >= 15)
+        // On a PC with little to spare, every program that starts with Windows is felt.
+        var littleToSpare = s.Disks.Any(d => d.IsSystemDisk && d.Media == DiskMedia.Hdd)
+            || (s.Memory.TotalBytes > 0 && s.Memory.TotalBytes < 7.5 * 1024 * 1024 * 1024)
+            || s.Cpu.Threads is > 0 and <= 4;
+        if (littleToSpare && os.StartupApps.Count >= 10)
+            list.Add(new(k, Severity.Warning, "board.startup.many", os.StartupApps.Count, string.Join(", ", os.StartupApps.Take(8))) { Weight = 4, Slows = true });
+        else if (os.StartupApps.Count >= 15)
             list.Add(new(k, Severity.Info, "board.startup.many", os.StartupApps.Count, string.Join(", ", os.StartupApps.Take(8))));
+        if (os.Architecture.TrimStart().StartsWith("32", StringComparison.Ordinal))
+            list.Add(new(k, Severity.Warning, "board.windows.32bit") { Weight = 6, Slows = true });
 
         // One failure is usually retried successfully; the same update failing again needs a look.
         if (s.Stability.UpdateFailures.GroupBy(u => u.Title).OrderByDescending(g => g.Count()).FirstOrDefault() is { } failed && failed.Count() >= 2)
@@ -433,7 +463,8 @@ public static partial class HealthAnalyzer
         }
         else
         {
-            var incidents = st.Incidents;
+            // Without what the user excused: a power cut says nothing about the PC, and nothing should be concluded from it.
+            var incidents = ActiveIncidents(s);
 
             // The overall verdict first: what most freezes and crashes point to.
             // It sums up the freezes and crashes below, which already count in the score.
@@ -457,15 +488,22 @@ public static partial class HealthAnalyzer
                     code == 0 ? "?" : Catalog.BugcheckText(code), new LocKey("cause." + (code == 0 ? "unknown" : Catalog.Bugcheck(code).Cause))));
             }
 
-            var frozen = incidents.Count(i => i.Kind == ShutdownKind.ForcedOff);
-            if (frozen > 0)
-                list.Add(new(k, frozen >= 3 ? Severity.Critical : Severity.Warning, "stability.forcedoff", frozen, days));
-            var sleep = incidents.Count(i => i.Kind == ShutdownKind.Sleep);
-            if (sleep > 0)
-                list.Add(new(k, sleep >= 3 ? Severity.Critical : Severity.Warning, "stability.sleepfail", sleep, days));
-            var silent = incidents.Count(i => i.Kind == ShutdownKind.PowerLoss);
-            if (silent > 0)
-                list.Add(new(k, silent >= 8 ? Severity.Critical : Severity.Warning, "stability.silent", silent, days));
+            // One of these now and then weighs little; the user can also say it wasn't the PC at all.
+            void Shutdowns(ShutdownKind kind, string key, int criticalFrom, Func<int, double> weight)
+            {
+                var excuse = ExcuseKeyOf(kind)!;
+                var counted = incidents.Count(i => i.Kind == kind);
+                var all = st.Incidents.Count(i => i.Kind == kind);
+                if (counted >= criticalFrom)
+                    list.Add(new(k, Severity.Critical, key, counted, days) { ExcuseKey = excuse });
+                else if (counted > 0)
+                    list.Add(new(k, Severity.Warning, key, counted, days) { ExcuseKey = excuse, Weight = weight(counted) });
+                else if (all > 0)
+                    list.Add(new(k, Severity.Info, key, all, days) { ExcuseKey = excuse, Excused = true, Scored = false });
+            }
+            Shutdowns(ShutdownKind.ForcedOff, "stability.forcedoff", 3, n => n == 1 ? 6 : 10);
+            Shutdowns(ShutdownKind.Sleep, "stability.sleepfail", 3, n => n == 1 ? 5 : 8);
+            Shutdowns(ShutdownKind.PowerLoss, "stability.silent", 8, n => n switch { 1 => 4, <= 3 => 7, _ => 10 });
             if (st.ThermalShutdowns.Count > 0)
                 list.Add(new(k, Severity.Critical, "stability.thermal", st.ThermalShutdowns.Count, days));
 
@@ -480,13 +518,25 @@ public static partial class HealthAnalyzer
             if (otherHangs.Count > 0)
                 list.Add(new(k, Severity.Info, "stability.livekernel", otherHangs.Count, Catalog.LiveKernelEvent(otherHangs[0].Code).Name, days));
 
-            foreach (var app in st.AppProblems.Where(a => a.Crashes >= 2).Take(3))
+            // A program's crashes are judged by where they happened: in the graphics driver or on a disk that couldn't
+            // be read, they say something about the PC. In the program's own code they are the program's fault.
+            foreach (var app in st.AppProblems.Where(a => a.Crashes >= 2).Take(4))
             {
                 var vendor = Catalog.GraphicsDriverVendor(app.Module);
-                list.Add(vendor is not null
+                Finding crash = vendor is not null
                     ? new(k, Severity.Warning, "stability.app.crash.gpu", app.App, app.Crashes, new LocKey("driver." + vendor))
-                    : new(k, app.Crashes >= 5 ? Severity.Warning : Severity.Info, "stability.app.crash", app.App, app.Crashes, Fmt.Or(app.Module)));
+                    : app.Cause == CrashCause.Disk
+                        ? new(k, Severity.Warning, "stability.app.crash.disk", app.App, app.Crashes)
+                        : app.Cause == CrashCause.Program
+                            ? new(k, Severity.Info, "stability.app.own", app.App, app.Crashes, Fmt.Or(app.Module))
+                            : new(k, app.Crashes >= 5 ? Severity.Warning : Severity.Info, "stability.app.crash", app.App, app.Crashes, Fmt.Or(app.Module)) { Weight = 5 };
+                list.Add(Excusable(s, crash, "appcrash:" + app.App.ToLowerInvariant(), app.Last));
             }
+
+            // One program crashing is that program's fault. Many unrelated ones crashing, and not in their own code, is the PC's: memory or system files.
+            var crashed = st.AppProblems.Where(a => a.Crashes > 0 && a.Cause == CrashCause.Unknown && Catalog.GraphicsDriverVendor(a.Module) is null).ToList();
+            if (crashed.Count >= 4 && crashed.Sum(a => a.Crashes) >= 8)
+                list.Add(new(k, Severity.Warning, "stability.app.many", crashed.Count, days));
             foreach (var app in st.AppProblems.Where(a => a.Hangs >= 3).Take(2))
                 list.Add(new(k, Severity.Info, "stability.app.hang", app.App, app.Hangs));
 
@@ -498,7 +548,7 @@ public static partial class HealthAnalyzer
                 list.Add(new(k, bursts >= 2 || resets >= 5 ? Severity.Warning : Severity.Info, "stability.network", Fmt.Or(nic.Key), resets, bursts, days));
             }
 
-            PowerTips(s, list);
+            PowerTips(s, incidents, list);
         }
 
         list.AddRange(Devices.DeviceAdvisor.Advise(s).Where(f => f.Key != "device.problem"));
@@ -539,13 +589,13 @@ public static partial class HealthAnalyzer
     }
 
     /// <summary>Power-saving features known to cause idle freezes and sleep problems; only shown when such problems happened.</summary>
-    private static void PowerTips(SystemSnapshot s, List<Finding> list)
+    private static void PowerTips(SystemSnapshot s, List<Incident> incidents, List<Finding> list)
     {
         const ComponentKind k = ComponentKind.Stability;
         var st = s.Stability;
         var p = s.Power;
-        var freezes = st.Incidents.Count(i => i.Kind is ShutdownKind.ForcedOff or ShutdownKind.PowerLoss or ShutdownKind.Sleep);
-        var sleepRelated = st.Incidents.Any(i => i.Cause == "sleep");
+        var freezes = incidents.Count(i => i.Kind is ShutdownKind.ForcedOff or ShutdownKind.PowerLoss or ShutdownKind.Sleep);
+        var sleepRelated = incidents.Any(i => i.Cause == "sleep");
         if (freezes == 0 && st.GpuDriverResets == 0) return;
 
         if (p.PcieLinkPowerManagement is > 0)
@@ -587,9 +637,38 @@ public static partial class HealthAnalyzer
     [GeneratedRegex(@"Ryzen\s+(5|7|9)\b", RegexOptions.IgnoreCase)]
     private static partial Regex RyzenPattern();
 
+    /// <summary>Below this share of a current mid-range processor's speed, one core is slow, or very slow.</summary>
+    private const double SlowCpu = 40;
+    private const double VerySlowCpu = 25;
+
     /// <summary>Freezes, crashes or hardware errors happened recently.</summary>
-    private static bool HasInstability(StabilityInfo st) =>
-        st.Incidents.Count > 0 || st.WheaErrors > 0 || st.WheaCorrected >= 10 || st.GpuDriverResets > 0;
+    private static bool HasInstability(SystemSnapshot s) =>
+        ActiveIncidents(s).Count > 0 || s.Stability.WheaErrors > 0 || s.Stability.WheaCorrected >= 10 || s.Stability.GpuDriverResets > 0;
+
+    /// <summary>The user said these weren't the PC's doing. What happened up to that moment no longer counts; what comes after does.</summary>
+    private static bool IsExcused(SystemSnapshot s, string key, DateTime time) => s.Excused.TryGetValue(key, out var at) && time <= at;
+
+    /// <summary>The shutdowns only the user can explain: Windows sees a power cut and a failing power supply alike.</summary>
+    private static string? ExcuseKeyOf(ShutdownKind kind) => kind switch
+    {
+        ShutdownKind.PowerLoss => "silent",
+        ShutdownKind.ForcedOff => "forcedoff",
+        ShutdownKind.Sleep => "sleepfail",
+        _ => null,
+    };
+
+    /// <summary>Freezes, crashes and sudden shutdowns, without the ones the user excused.</summary>
+    public static List<Incident> ActiveIncidents(SystemSnapshot s) =>
+        s.Stability.Incidents.Where(i => ExcuseKeyOf(i.Kind) is not { } key || !IsExcused(s, key, i.Time)).ToList();
+
+    /// <summary>Adds the tick to a finding that counts, or shows it as excused when the user has ticked it.</summary>
+    private static Finding Excusable(SystemSnapshot s, Finding f, string key, DateTime last)
+    {
+        if (f.Severity < Severity.Warning) return f;
+        return IsExcused(s, key, last)
+            ? new Finding(f.Component, Severity.Info, f.Key, f.Args) { ExcuseKey = key, Excused = true, Scored = false }
+            : new Finding(f.Component, f.Severity, f.Key, f.Args) { ExcuseKey = key, Weight = f.Weight, Scored = f.Scored };
+    }
 
     /// <summary>
     /// Memory channel of a module from its slot names ("P0 CHANNEL A", "Controller1-ChannelA-DIMM0", "DIMM_B2"),

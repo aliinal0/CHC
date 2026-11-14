@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace CHC.Core.Updates;
 
-/// <summary>In the order they are shown: drivers and Windows first, then the suggestions.</summary>
-public enum UpdateKind { GraphicsDriver, ChipsetDriver, WindowsDriver, Windows, Runtime, Program }
+/// <summary>What an update is for. The numbers are kept in a file, so a new kind goes at the end.</summary>
+public enum UpdateKind { GraphicsDriver, ChipsetDriver, WindowsDriver, Windows, Runtime, Program, DeviceDriver }
 
 /// <summary>Something with a newer version than the one on this PC.</summary>
 public sealed class AvailableUpdate
@@ -18,6 +18,22 @@ public sealed class AvailableUpdate
     public string Latest { get; set; } = "";
     public DateTime? Released { get; set; }
     public string? Url { get; set; }
+
+    /// <summary>For a device's driver: which hardware it is, to see later that the driver was installed.</summary>
+    public string? HardwareId { get; set; }
+
+    /// <summary>The order they are shown in: drivers first, then Windows, then the suggestions.</summary>
+    [JsonIgnore]
+    public int Rank => Kind switch
+    {
+        UpdateKind.GraphicsDriver => 0,
+        UpdateKind.ChipsetDriver => 1,
+        UpdateKind.DeviceDriver => 2,
+        UpdateKind.WindowsDriver => 3,
+        UpdateKind.Windows => 4,
+        UpdateKind.Runtime => 5,
+        _ => 6,
+    };
 }
 
 /// <summary>Where NVIDIA's lookup keeps a card, so it needs finding only once.</summary>

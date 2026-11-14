@@ -93,7 +93,30 @@ public sealed class FindingViewModel(Finding finding, bool showComponent = false
     public bool IsUpdate { get; } = finding.IsUpdate;
     public SymbolRegular Symbol { get; } = finding.IsUpdate ? SymbolRegular.ArrowDownload24 : SeveritySymbolConverter.For(finding.Severity);
     public SymbolRegular AdviceSymbol { get; } = finding.IsUpdate ? SymbolRegular.ArrowDownload20 : SymbolRegular.Lightbulb20;
-    public string SeverityText { get; } = ReportWriter.SeverityName(finding.IsUpdate ? Severity.Update : finding.Severity);
+    public string SeverityText { get; } = finding.Excused
+        ? Loc.T("excuse.done")
+        : ReportWriter.SeverityName(finding.IsUpdate ? Severity.Update : finding.Severity);
+
+    /// <summary>Told when the user ticks or unticks "this wasn't the PC": the key of what is excused, and whether it is.</summary>
+    public static Action<string, bool>? ExcuseChanged { get; set; }
+
+    /// <summary>The user may say this wasn't the PC's doing, which takes it out of the score.</summary>
+    public bool CanExcuse { get; } = finding.ExcuseKey is not null;
+    public string ExcuseLabel { get; } = finding.ExcuseLabel;
+    public string ExcuseHint { get; } = finding.ExcuseHint;
+
+    private bool _isExcused = finding.Excused;
+
+    public bool IsExcused
+    {
+        get => _isExcused;
+        set
+        {
+            if (_isExcused == value || finding.ExcuseKey is null) return;
+            _isExcused = value;
+            ExcuseChanged?.Invoke(finding.ExcuseKey, value);
+        }
+    }
 
     /// <summary>Opens the maker's page or Windows Update. CHC itself never downloads or installs anything.</summary>
     public bool HasAction { get; } = finding.ActionUrl is not null;

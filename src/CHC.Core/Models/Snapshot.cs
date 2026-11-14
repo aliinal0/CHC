@@ -14,6 +14,16 @@ public sealed class SystemSnapshot
 
     public OsInfo Os { get; set; } = new();
 
+    /// <summary>What was measured about how fast the PC is.</summary>
+    public SpeedInfo Speed { get; set; } = new();
+
+    /// <summary>
+    /// What the user said wasn't the PC's doing, and when they said it ("silent", "appcrash:name"...). Only what
+    /// happened up to that moment is excused: the next power cut shows up again.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Dictionary<string, DateTime> Excused { get; set; } = new(StringComparer.Ordinal);
+
     /// <summary>What the last look for updates found. Written to reports on its own, as the program list is optional there.</summary>
     [System.Text.Json.Serialization.JsonIgnore]
     public UpdateInfo Updates { get; set; } = new();
@@ -36,6 +46,9 @@ public sealed class SystemSnapshot
     /// <summary>The last network test run in the app, if any (included in reports).</summary>
     public NetSession? NetworkTest { get; set; }
     public List<ProblemDevice> ProblemDevices { get; set; } = [];
+
+    /// <summary>The drivers in use that came from a maker rather than with Windows, and those of every Intel device.</summary>
+    public List<InstalledDriver> Drivers { get; set; } = [];
 
     /// <summary>What is connected to the PC: by cable, wirelessly, and its monitors.</summary>
     public List<Devices.ConnectedDevice> Devices { get; set; } = [];
@@ -394,6 +407,21 @@ public sealed class NetworkReset
     public int Resets { get; set; }
 }
 
+/// <summary>A driver in use.</summary>
+public sealed class InstalledDriver
+{
+    public string Device { get; set; } = "";
+
+    /// <summary>Windows' device class: "DISPLAY", "MEDIA", "NET", "BLUETOOTH", "SYSTEM"...</summary>
+    public string Class { get; set; } = "";
+    public string Provider { get; set; } = "";
+    public string Version { get; set; } = "";
+    public DateTime? Date { get; set; }
+
+    /// <summary>What kind of hardware it is ("PCI\VEN_8086&amp;DEV_56B0&amp;..."), without the part that names this one device.</summary>
+    public string HardwareId { get; set; } = "";
+}
+
 public sealed class UpdateFailure
 {
     public DateTime Time { get; set; }
@@ -429,6 +457,19 @@ public sealed class AppEvent
     public string App { get; set; } = "";
     public string Module { get; set; } = "";
     public bool IsHang { get; set; }
+
+    /// <summary>Windows' code for what went wrong, as hexadecimal ("c0000005").</summary>
+    public string ExceptionCode { get; set; } = "";
+
+    /// <summary>The module that crashed is the program itself or comes from its own folder.</summary>
+    public bool ModuleIsOwn { get; set; }
+}
+
+/// <summary>What was measured about how fast the PC is.</summary>
+public sealed class SpeedInfo
+{
+    /// <summary>Speed of one processor core in a short timed calculation, in percent of a mid-range desktop processor of 2023.</summary>
+    public double? CpuSpeedPercent { get; set; }
 }
 
 public sealed class AppProblem
@@ -440,6 +481,9 @@ public sealed class AppProblem
 
     /// <summary>Module that crashed most often (e.g. the graphics driver DLL).</summary>
     public string Module { get; set; } = "";
+
+    /// <summary>Whose fault the crashes most likely are, from where and how they happened.</summary>
+    public Diagnostics.CrashCause Cause { get; set; }
 }
 
 public sealed class Incident
